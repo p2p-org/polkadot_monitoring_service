@@ -1968,12 +1968,10 @@
         "current": {
           "selected": true,
           "text": [
-            "124YFXA3XoRs9Epcx3aRUSk3EKYaznocqMWfrMKtGjx8TJ2W",
-            "12713bbq45c66CN9AD7yusSXWE1kY91DcMpjVcB2rXqZKy2w"
+            "All"
           ],
           "value": [
-            "124YFXA3XoRs9Epcx3aRUSk3EKYaznocqMWfrMKtGjx8TJ2W",
-            "12713bbq45c66CN9AD7yusSXWE1kY91DcMpjVcB2rXqZKy2w"
+            "$__all"
           ]
         },
         "datasource": {
