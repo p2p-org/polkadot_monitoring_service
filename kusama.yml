@@ -1,0 +1,30 @@
+version: '3.4'
+
+services:
+  kusama_common_exporter:
+    build:
+      context: ./exporters
+      args:
+        exporter: "common_exporter"
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150" 
+    - "CHAIN=kusama"
+    env_file:
+    - ./kusama.env
+    networks:
+    - exporters
+
+  kusama_finality_exporter:
+    build:
+      context: ./exporters
+      args:
+        exporter: "finality_exporter"
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150"
+    - "CHAIN=kusama"
+    env_file:
+    - ./kusama.env
+    networks:
+    - exporters

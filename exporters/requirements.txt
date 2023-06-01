@@ -1,0 +1,4 @@
+pyyaml
+substrate-interface
+flask
+numpy

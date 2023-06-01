@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 30s
+  scrape_timeout: 10s
+
+scrape_configs:
+- job_name: polkadot_common_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'polkadot_common_exporter:9150'
+
+- job_name: kusama_common_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'kusama_common_exporter:9150'
+
+- job_name: polkadot_finality_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'polkadot_finality_exporter:9150'
+        
+- job_name: kusama_finality_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'kusama_finality_exporter:9150'

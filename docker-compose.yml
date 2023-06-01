@@ -1,0 +1,42 @@
+version: '3.4'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - 9090:9090
+    networks:
+      - exporters
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    user: "472"
+    depends_on:
+    - prometheus
+    ports:
+    - 3000:3000
+    volumes:
+    - grafana_data:/var/lib/grafana
+    - ./grafana/provisioning/:/etc/grafana/provisioning/
+    environment:
+    - 'GF_SECURITY_ADMIN_PASSWORD=admin'
+    - 'GF_USERS_ALLOW_SIGN_UP=false'
+    networks:
+    - monitoring
+
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+
+networks:
+  exporters: 
+  monitoring:
