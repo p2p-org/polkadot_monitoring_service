@@ -658,7 +658,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "max by (account) (max_over_time(polkadot_finality_precommits{chain=\"$chain\",account=~\"($account)\"}[1m])) / on () group_left() max(max_over_time(polkadot_finality_roundProcessed{chain=\"$chain\"}[1m])) * 100 and on(account) polkadot_session_validators == 1",
+          "expr": "max by (account) (max_over_time(polkadot_finality_precommits{chain=\"$chain\",account=~\"$account\"}[1m])) / on () group_left() max(max_over_time(polkadot_finality_roundProcessed{chain=\"$chain\"}[1m])) * 100 and on(account) polkadot_session_validators == 1",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -673,7 +673,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "max by (account) (max_over_time(polkadot_finality_prevotes{chain=\"$chain\",account=~\"($account)\"}[1m])) / on () group_left() max(max_over_time(polkadot_finality_roundProcessed{chain=\"$chain\"}[1m])) * 100 and on(account) polkadot_session_validators == 1",
+          "expr": "max by (account) (max_over_time(polkadot_finality_prevotes{chain=\"$chain\",account=~\"$account\"}[1m])) / on () group_left() max(max_over_time(polkadot_finality_roundProcessed{chain=\"$chain\"}[1m])) * 100 and on(account) polkadot_session_validators == 1",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -794,7 +794,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "polkadot_finality_prevotes{chain=\"$chain\",account=~\"($account)\"} > 0",
+          "expr": "polkadot_finality_prevotes{chain=\"$chain\",account=~\"$account\"} > 0",
           "hide": false,
           "interval": "",
           "legendFormat": "{{ account }}",
@@ -890,7 +890,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "polkadot_finality_precommits{chain=\"$chain\",account=~\"($account)\"} > 0",
+          "expr": "polkadot_finality_precommits{chain=\"$chain\",account=~\"$account\"} > 0",
           "hide": false,
           "interval": "",
           "legendFormat": "{{ account }}",
@@ -971,7 +971,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(sum_over_time(polkadot_staking_eraPoints{chain=\"$chain\",account=~\"($account)\"}[30s]))",
+          "expr": "sum(sum_over_time(polkadot_staking_eraPoints{chain=\"$chain\",account=~\"$account\"}[30s]))",
           "instant": false,
           "interval": "",
           "legendFormat": "",
@@ -1064,7 +1064,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "max_over_time(polkadot_session_validators{chain=\"$chain\",account=~\"($account)\"}[15s]) == 1",
+          "expr": "max_over_time(polkadot_session_validators{chain=\"$chain\",account=~\"$account\"}[15s]) == 1",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -1295,7 +1295,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(sum_over_time(polkadot_session_validators{chain=\"$chain\",account=~\"($account)\"}[15s]) > 0)",
+          "expr": "sum(sum_over_time(polkadot_session_validators{chain=\"$chain\",account=~\"$account\"}[15s]) > 0)",
           "instant": false,
           "interval": "",
           "legendFormat": "",
@@ -1964,23 +1964,36 @@
         "type": "custom"
       },
       {
+        "allValue": "(.*)",
         "current": {
-          "selected": false,
-          "text": ".*",
-          "value": ".*"
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
         },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(account)",
         "hide": 0,
+        "includeAll": true,
+        "label": "account",
+        "multi": true,
         "name": "account",
-        "options": [
-          {
-            "selected": true,
-            "text": ".*",
-            "value": ".*"
-          }
-        ],
-        "query": ".*",
+        "options": [],
+        "query": {
+          "query": "label_values(account)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
         "skipUrlSync": false,
-        "type": "textbox"
+        "sort": 0,
+        "type": "query"
       }
     ]
   },
@@ -2004,6 +2017,6 @@
   "timezone": "",
   "title": "P2P.ORG Polkadot/Kusama  dashboard",
   "uid": "fDrj0_EGz",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
