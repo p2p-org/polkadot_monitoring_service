@@ -82,7 +82,6 @@ def get_votes(url):
     while True:
         try:
             d = requests.post(url, json={"id":1, "jsonrpc":"2.0","method":"grandpa_roundState"}, headers=headers, timeout=5).json()['result']['best']
-
             if d['round'] != rd and len(r) != 0:
                 q_votes_raw.append(r)
 
