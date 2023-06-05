@@ -7,23 +7,23 @@ To `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentati
 
 
 #### Metics definition
-`polkadot_staking_currentEra`(chain) Current era
-`polkadot_staking_eraProgress`(chain) Era progress in percents
-`polkadot_staking_totalPoints`(chain) Amount of points earned by whole network
-`polkadot_staking_eraPoints`(chain,account) Amount of points earned by validator in current era
-`polkadot_staking_validatorsChart`(chain,account) Validator's position from best to worst
-`polkadot_session_currentSession`(chain) Current session index
-`polkadot_session_sessionProgress`(chain) Session progress in percents
-`polkadot_session_validators`(chain,account) Is validator active or not
-`polkadot_session_paraValidators`(chain,account) Paravalidator or not
-`polkadot_pv_pointsMedian`(chain,account) Median ParaValidator points ratio
-`polkadot_pv_pointsAverage`(chain,account) Average ParaValidator points ratio
-`polkadot_pv_pointsP95`(chain,account) ParaValidator points ration 95 percentile
-`polkadot_pv_eraPoints`(chain,account) Amount of points earned by ParaValidator in current session
-`polkadot_pv_paraValidatorsChart`(chain,account) ParaValidator's position from best to worst
-`polkadot_finality_roundProcessed`(chain) Processed round - Rounds processed
-`polkadot_finality_prevotes`(chain,account) - Amount of prevoutes successed by validators
-`polkadot_finality_precommits`(chain,account) - Amount of precommits succesed by validators (became to 2/3)
+* `polkadot_staking_currentEra`(chain) Current era
+* `polkadot_staking_eraProgress`(chain) Era progress in percents
+* `polkadot_staking_totalPoints`(chain) Amount of points earned by whole network
+* `polkadot_staking_eraPoints`(chain,account) Amount of points earned by validator in current era
+* `polkadot_staking_validatorsChart`(chain,account) Validator's position from best to worst
+* `polkadot_session_currentSession`(chain) Current session index
+* `polkadot_session_sessionProgress`(chain) Session progress in percents
+* `polkadot_session_validators`(chain,account) Is validator active or not
+* `polkadot_session_paraValidators`(chain,account) Paravalidator or not
+* `polkadot_pv_pointsMedian`(chain,account) Median ParaValidator points ratio
+* `polkadot_pv_pointsAverage`(chain,account) Average ParaValidator points ratio
+* `polkadot_pv_pointsP95`(chain,account) ParaValidator points ration 95 percentile
+* `polkadot_pv_eraPoints`(chain,account) Amount of points earned by ParaValidator in current session
+* `polkadot_pv_paraValidatorsChart`(chain,account) ParaValidator's position from best to worst
+* `polkadot_finality_roundProcessed`(chain) Processed round - Rounds processed
+* `polkadot_finality_prevotes`(chain,account) - Amount of prevoutes successed by validators
+* `polkadot_finality_precommits`(chain,account) - Amount of precommits succesed by validators (became to 2/3)
 
 
 #### How to start
