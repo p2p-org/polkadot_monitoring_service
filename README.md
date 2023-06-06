@@ -51,6 +51,6 @@ RPC_ENDPOINTS="http://your-node1:9933,http://your-node2:9933,http://your-node3:9
 
 
 #### References
-https://github.com/polkascan/py-substrate-interface - Python Substrate Interface
-https://wiki.polkadot.network/ - Polkadot Wiki
-https://polkadot.js.org/docs/ - Good to know
+* https://github.com/polkascan/py-substrate-interface - Python Substrate Interface
+* https://wiki.polkadot.network/ - Polkadot Wiki
+* https://polkadot.js.org/docs/ - Good to know
