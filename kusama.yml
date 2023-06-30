@@ -3,7 +3,7 @@ version: '3.4'
 services:
   kusama_common_exporter:
     build:
-      context: ./exporters
+      context: ./exporters/common
       args:
         exporter: "common_exporter"
     environment:
@@ -17,7 +17,7 @@ services:
 
   kusama_finality_exporter:
     build:
-      context: ./exporters
+      context: ./exporters/common
       args:
         exporter: "finality_exporter"
     environment:
@@ -28,3 +28,11 @@ services:
     - ./kusama.env
     networks:
     - exporters
+
+  kusama_events_exporter:
+    build:
+      context: ./exporters/events
+    networks:
+    - exporters
+    env_file:
+    - ./kusama.env
