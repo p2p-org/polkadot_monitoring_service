@@ -1,0 +1,20 @@
+---
+groups:
+- name: maas rules
+  rules:
+  - alert: Finality exporter availibility
+    expr: up{job=~"(.*)_finality_exporter"} == 0
+    for: 2m
+    labels:
+      severity: high
+    annotations:
+      summary: "{{ $labels.job }}: Finality exporter is down."
+      description: "Finality exporter {{ $labels.job }} is down."
+  - alert: Common exporter availibility
+    expr: up{job=~"(.*)_common_exporter"} == 0
+    for: 2m
+    labels:
+      severity: high
+    annotations:
+      summary: "{{ $labels.job }}: Common exporter is down."
+      description: "Common exporter {{ $labels.job }} is down."
