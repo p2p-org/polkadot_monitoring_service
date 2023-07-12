@@ -192,7 +192,7 @@ func (reader *EventsReader) Read(parentctx context.Context) error {
 		for {
 			select {
 			case h := <-hashes:
-				go reader.processSingleBlock(parentctx, h)
+				go reader.processSingleBlock(parentctx, h) //nolint:golint,errcheck
 			case e := <-errs:
 				reader.log.WithError(e).Warn("read loop will be restarted")
 				time.Sleep(3 * time.Second)

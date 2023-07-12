@@ -17,10 +17,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
+import logging
 from substrateinterface import SubstrateInterface, Keypair
 from substrateinterface.exceptions import SubstrateRequestException
 from websocket._exceptions import WebSocketConnectionClosedException
+
 
 class SUBSTRATE_INTERFACE:
     def __init__(self, ws_endpoint, chain):
@@ -28,7 +29,6 @@ class SUBSTRATE_INTERFACE:
             url=ws_endpoint,
             ss58_format=42,
             type_registry_preset=chain)
-
 
     def request(self, module: str, function: str, params: str = None):
         try:
@@ -38,10 +38,15 @@ class SUBSTRATE_INTERFACE:
                 params=params)
 
             return r
-        except (WebSocketConnectionClosedException,ConnectionRefusedError,SubstrateRequestException) as e:
+        except (WebSocketConnectionClosedException, ConnectionRefusedError, SubstrateRequestException) as e:
             self.substrate.connect_websocket()
-            logging.critical('The substrate api call failed with error ' + str(e))
+            logging.critical(
+                'The substrate api call failed with error ' + str(e))
             r = None
+
+    def rpc_request(self, method: str, params: str = None):
+        return self.substrate.rpc_request(method=method, params=params)
+
 
 def get_era_points(data):
     result = {}
@@ -49,31 +54,38 @@ def get_era_points(data):
     for i in data['individual']:
         result[i[0]] = i[1]
 
-    return {'result':result,'total':data['total']}
+    return {'result': result, 'total': data['total']}
 
-def get_chain_info(chain,substrate_interface):
-    constants = {'polkadot':{'session_length':2400,'era_length':14400},
-                 'kusama':{'session_length':600,'era_length':3600}
-                }
+
+def get_chain_info(chain, substrate_interface):
+    constants = {'polkadot': {'session_length': 2400, 'era_length': 14400},
+                 'kusama': {'session_length': 600, 'era_length': 3600}
+                 }
 
     session_length = constants[chain]['session_length']
     era_length = constants[chain]['era_length']
 
-    current_era = substrate_interface.request('Staking','ActiveEra').value['index']
-    current_session = substrate_interface.request('Session','CurrentIndex').value
+    current_era = substrate_interface.request(
+        'Staking', 'ActiveEra').value['index']
+    current_session = substrate_interface.request(
+        'Session', 'CurrentIndex').value
 
-    eras_start_session_index = substrate_interface.request('Staking','ErasStartSessionIndex',[current_era]).value
+    eras_start_session_index = substrate_interface.request(
+        'Staking', 'ErasStartSessionIndex', [current_era]).value
 
-    genesis_slot = substrate_interface.request('Babe','GenesisSlot').value
-    current_slot = substrate_interface.request('Babe','CurrentSlot').value
+    genesis_slot = substrate_interface.request('Babe', 'GenesisSlot').value
+    current_slot = substrate_interface.request('Babe', 'CurrentSlot').value
 
-    session_start_slot = int(current_session) * int(session_length) + int(genesis_slot)
+    session_start_slot = int(current_session) * \
+        int(session_length) + int(genesis_slot)
     session_progress = int(current_slot) - int(session_start_slot)
 
     era_session_index = int(current_session) - int(eras_start_session_index)
-    era_progress = int(era_session_index) * int(session_length) + int(session_progress)
+    era_progress = int(era_session_index) * \
+        int(session_length) + int(session_progress)
 
     return {'current_era': current_era, 'eras_start_session_index': eras_start_session_index, 'current_session': current_session, 'era_progress': era_progress / era_length * 100, 'session_progress': session_progress / session_length * 100}
+
 
 def ss58_convert(data):
     r = []
@@ -84,8 +96,9 @@ def ss58_convert(data):
 
     return r
 
-def get_keys(validators,keys):
-    result = {i:None for i in validators}
+
+def get_keys(validators, keys):
+    result = {i: None for i in validators}
 
     for i in keys:
         if str(i[0]) in result.keys():
