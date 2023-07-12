@@ -27,8 +27,7 @@ from _thread import interrupt_main
 from collections import deque
 from flask import Flask, make_response
 
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-                    level=logging.INFO, datefmt='%Y-%m-%d %I:%M:%S')
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %I:%M:%S')
 app = Flask(__name__)
 
 
@@ -43,8 +42,7 @@ def metrics():
         out += '# HELP polkadot_finality_roundProcessed Blocks processed\n'
         out += '# TYPE polkadot_finality_roundProcessed counter\n'
 
-        out += 'polkadot_finality_roundProcessed{chain="%s"} %s\n' % (
-            chain, metrics['roundProcessed'])
+        out += 'polkadot_finality_roundProcessed{chain="%s"} %s\n' % (chain, metrics['roundProcessed'])
 
     except KeyError:
         pass
@@ -54,8 +52,7 @@ def metrics():
         out += "# TYPE polkadot_finality_prevotes counter\n"
 
         for k, v in metrics['validators'].items():
-            out += 'polkadot_finality_prevotes{chain="%s",account="%s"} %s\n' % (
-                chain, k, v['prevotes'])
+            out += 'polkadot_finality_prevotes{chain="%s",account="%s"} %s\n' % (chain, k, v['prevotes'])
 
     except KeyError:
         pass
@@ -65,8 +62,7 @@ def metrics():
         out += "# TYPE polkadot_finality_precommits counter\n"
 
         for k, v in metrics['validators'].items():
-            out += 'polkadot_finality_precommits{chain="%s",account="%s"} %s\n' % (
-                chain, k, v['precommits'])
+            out += 'polkadot_finality_precommits{chain="%s",account="%s"} %s\n' % (chain, k, v['precommits'])
 
     except KeyError:
         pass
@@ -112,15 +108,13 @@ def construct_metrics(active_validators, grandpa_keys, votes_threshold, current_
     except IndexError:
         metrics = {}
         metrics['currentSession'] = current_session
-        metrics['validators'] = {
-            k: {'prevotes': 0, 'precommits': 0} for k in grandpa_keys.keys()}
+        metrics['validators'] = {k: {'prevotes': 0, 'precommits': 0} for k in grandpa_keys.keys()}
         metrics['roundProcessed'] = 0
 
     try:
         if current_session != metrics['currentSession']:
             logging.info('New session ' + str(current_session) + ' has just begun.')
-            metrics['validators'] = {
-                k: {'prevotes': 0, 'precommits': 0} for k in grandpa_keys.keys()}
+            metrics['validators'] = {k: {'prevotes': 0, 'precommits': 0} for k in grandpa_keys.keys()}
             metrics['roundProcessed'] = 0
             metrics['currentSession'] = current_session
     except KeyError:
@@ -138,8 +132,7 @@ def construct_metrics(active_validators, grandpa_keys, votes_threshold, current_
                 try:
                     result[k]['count'] += 1
                 except KeyError:
-                    result[k] = {'count': 1, 'prevotes': prevotes,
-                                 'precommits': precommits}
+                    result[k] = {'count': 1, 'prevotes': prevotes, 'precommits': precommits}
 
                 if len(prevotes) < len(result[k]['prevotes']):
                     result[k]['prevotes'] = prevotes
@@ -165,8 +158,7 @@ def construct_metrics(active_validators, grandpa_keys, votes_threshold, current_
                     else:
                         metrics['roundProcessed'] += 1
 
-                    logging.info('Round ' + str(k) + ' has processed. Prevotes: ' + str(
-                        len(voted_prevotes)) + '. Precommits:  ' + str(len(voted_precommits)))
+                    logging.info('Round ' + str(k) + ' has processed. Prevotes: ' + str(len(voted_prevotes)) + '. Precommits:  ' + str(len(voted_precommits)))
                     q_rounds_processed.append(k)
 
         return metrics
@@ -183,16 +175,12 @@ def main():
 
             chain_info = get_chain_info(chain, substrate_interface)
             current_session = chain_info['current_session']
-            votes_threshold = (rpc_count * thread_count) - \
-                (len(q_outaged) * thread_count)
-            active_validators = substrate_interface.request(
-                'Session', 'Validators').value
-            all_keys = substrate_interface.request(
-                'Session', 'QueuedKeys').value
+            votes_threshold = (rpc_count * thread_count) - (len(q_outaged) * thread_count)
+            active_validators = substrate_interface.request('Session', 'Validators').value
+            all_keys = substrate_interface.request('Session', 'QueuedKeys').value
             grandpa_keys = get_keys(active_validators, all_keys)
 
-            metrics = construct_metrics(
-                active_validators, grandpa_keys, votes_threshold, current_session)
+            metrics = construct_metrics(active_validators, grandpa_keys, votes_threshold, current_session)
 
             q_metrics.clear()
             q_metrics.append(metrics)

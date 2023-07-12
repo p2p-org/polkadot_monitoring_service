@@ -30,8 +30,7 @@ from flask import Flask, make_response
 from numpy import median, average, percentile
 from decimal import Decimal
 
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-                    level=logging.INFO, datefmt='%Y-%m-%d %I:%M:%S')
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %I:%M:%S')
 app = Flask(__name__)
 
 
@@ -46,8 +45,7 @@ def metrics():
         out += '# HELP polkadot_staking_currentEra Current era\n'
         out += '# TYPE polkadot_staking_currentEra counter\n'
 
-        out += 'polkadot_staking_currentEra{chain="%s"} %s\n' % (
-            chain, metrics['common']['currentEra'])
+        out += 'polkadot_staking_currentEra{chain="%s"} %s\n' % (chain, metrics['common']['currentEra'])
 
     except KeyError:
         pass
@@ -56,8 +54,7 @@ def metrics():
         out += '# HELP polkadot_staking_eraProgress Era progress\n'
         out += '# TYPE polkadot_staking_eraProgress counter\n'
 
-        out += 'polkadot_staking_eraProgress{chain="%s"} %s\n' % (
-            chain, metrics['common']['eraProgress'])
+        out += 'polkadot_staking_eraProgress{chain="%s"} %s\n' % (chain, metrics['common']['eraProgress'])
 
     except KeyError:
         pass
@@ -66,8 +63,7 @@ def metrics():
         out += '# HELP polkadot_staking_totalPoints Total points\n'
         out += '# TYPE polkadot_staking_totalPoints counter\n'
 
-        out += 'polkadot_staking_totalPoints{chain="%s"} %s\n' % (
-            chain, metrics['totalEraPoints'])
+        out += 'polkadot_staking_totalPoints{chain="%s"} %s\n' % (chain, metrics['totalEraPoints'])
 
     except KeyError:
         pass
@@ -77,8 +73,7 @@ def metrics():
         out += "# TYPE polkadot_staking_eraPoints counter\n"
 
         for k, v in metrics['eraPoints'].items():
-            out += 'polkadot_staking_eraPoints{chain="%s",account="%s"} %s\n' % (
-                chain, k, v)
+            out += 'polkadot_staking_eraPoints{chain="%s",account="%s"} %s\n' % (chain, k, v)
 
     except KeyError:
         pass
@@ -88,8 +83,7 @@ def metrics():
         out += "# TYPE polkadot_staking_validatorsChart counter\n"
 
         for k, v in metrics['validatorsChart'].items():
-            out += 'polkadot_staking_validatorPositionChart{chain="%s",account="%s"} %s\n' % (
-                chain, k, v)
+            out += 'polkadot_staking_validatorPositionChart{chain="%s",account="%s"} %s\n' % (chain, k, v)
 
     except KeyError:
         pass
@@ -98,8 +92,7 @@ def metrics():
         out += '# HELP polkadot_session_currentSession Current session\n'
         out += '# TYPE polkadot_session_currentSession counter\n'
 
-        out += 'polkadot_session_currentSession{chain="%s"} %s\n' % (
-            chain, metrics['common']['currentSession'])
+        out += 'polkadot_session_currentSession{chain="%s"} %s\n' % (chain, metrics['common']['currentSession'])
 
     except KeyError:
         pass
@@ -108,8 +101,7 @@ def metrics():
         out += '# HELP polkadot_session_sessionProgress Session progress\n'
         out += '# TYPE polkadot_session_sessionProgress counter\n'
 
-        out += 'polkadot_session_sessionProgress{chain="%s"} %s\n' % (
-            chain, metrics['common']['sessionProgress'])
+        out += 'polkadot_session_sessionProgress{chain="%s"} %s\n' % (chain, metrics['common']['sessionProgress'])
 
     except KeyError:
         pass
@@ -119,8 +111,7 @@ def metrics():
         out += "# TYPE polkadot_session_validators counter\n"
 
         for k, v in metrics['sessionValidators'].items():
-            out += 'polkadot_session_validators{chain="%s",account="%s"} %s\n' % (
-                chain, k, v)
+            out += 'polkadot_session_validators{chain="%s",account="%s"} %s\n' % (chain, k, v)
 
     except KeyError:
         pass
@@ -130,8 +121,7 @@ def metrics():
         out += '# TYPE polkadot_session_paraValidators counter\n'
 
         for k, v in metrics['paraValidators'].items():
-            out += 'polkadot_session_paraValidators{chain="%s",account="%s"} %s\n' % (
-                chain, k, v)
+            out += 'polkadot_session_paraValidators{chain="%s",account="%s"} %s\n' % (chain, k, v)
 
     except KeyError:
         pass
@@ -140,8 +130,7 @@ def metrics():
         out += '# HELP polkadot_pv_pointsMedian Points median\n'
         out += '# TYPE polkadot_pv_pointsMedian counter\n'
 
-        out += 'polkadot_pv_pointsMedian{chain="%s"} %s\n' % (
-            chain, metrics['common']['median'])
+        out += 'polkadot_pv_pointsMedian{chain="%s"} %s\n' % (chain, metrics['common']['median'])
 
     except KeyError:
         pass
@@ -150,8 +139,7 @@ def metrics():
         out += '# HELP polkadot_pv_pointsAverage Points average\n'
         out += '# TYPE polkadot_pv_pointsAverage counter\n'
 
-        out += 'polkadot_pv_pointsAverage{chain="%s"} %s\n' % (
-            chain, metrics['common']['average'])
+        out += 'polkadot_pv_pointsAverage{chain="%s"} %s\n' % (chain, metrics['common']['average'])
 
     except KeyError:
         pass
@@ -159,8 +147,7 @@ def metrics():
         out += '# HELP polkadot_pv_pointsP95 Points p95\n'
         out += '# TYPE polkadot_pv_pointsP95 counter\n'
 
-        out += 'polkadot_pv_pointsP95{chain="%s"} %s\n' % (
-            chain, metrics['common']['p95'])
+        out += 'polkadot_pv_pointsP95{chain="%s"} %s\n' % (chain, metrics['common']['p95'])
 
     except KeyError:
         pass
@@ -170,8 +157,7 @@ def metrics():
         out += '# TYPE polkadot_pv_eraPoints counter\n'
 
         for k, v in metrics['pv_eraPoints'].items():
-            out += 'polkadot_pv_eraPoints{chain="%s",account="%s"} %s\n' % (
-                chain, k, v)
+            out += 'polkadot_pv_eraPoints{chain="%s",account="%s"} %s\n' % (chain, k, v)
 
     except KeyError:
         pass
@@ -181,8 +167,7 @@ def metrics():
         out += "# TYPE polkadot_pv_paraValidatorsChart counter\n"
 
         for k, v in metrics['paraValidatorsChart'].items():
-            out += 'polkadot_pv_paraValidatorsChart{chain="%s",account="%s"} %s\n' % (
-                chain, k, v)
+            out += 'polkadot_pv_paraValidatorsChart{chain="%s",account="%s"} %s\n' % (chain, k, v)
 
     except KeyError:
         pass
@@ -205,8 +190,7 @@ def warmup_state(era, start_session, current_session, session_progress, era_poin
     sessions = []
 
     while s_idx <= current_session:
-        result_tmp[s_idx] = [validator for validator in substrate_interface.request(
-            'ParaSessionInfo', 'AccountKeys', [s_idx]).value]
+        result_tmp[s_idx] = [validator for validator in substrate_interface.request('ParaSessionInfo', 'AccountKeys', [s_idx]).value]
         sessions.append(s_idx)
         s_idx += 1
 
@@ -228,8 +212,7 @@ def warmup_state(era, start_session, current_session, session_progress, era_poin
 
         if list(sessions.keys())[-1] == current_session:
             full_session_points = points / divider
-            current_session_points = points - \
-                (full_session_points * full_sessions)
+            current_session_points = points - (full_session_points * full_sessions)
 
         elif list(sessions.keys())[-1] != current_session:
             full_session_points = points / len(sessions.keys())
@@ -268,8 +251,7 @@ def calculate_session_points(validator, current_session, era_sessions, era_point
     if len(list(state[validator].keys())) == 1:
         points = int(Decimal(total_points))
     else:
-        points = int(Decimal(
-            total_points - sum(list(state[validator].values())) + state[validator][current_session]))
+        points = int(Decimal(total_points - sum(list(state[validator].values())) + state[validator][current_session]))
 
     state[validator][current_session] = points
 
@@ -284,8 +266,7 @@ def construct_metrics(era, current_session, era_progress, session_progress, sess
     result = {'common': {}, 'pv_eraPoints': {}}
     result['sessionValidators'] = {k: 1 for k in session_validators}
     result['paraValidators'] = {k: 1 for k in paravalidators}
-    result['eraPoints'] = {
-        k: v for k, v in era_points['result'].items() if k in session_validators}
+    result['eraPoints'] = {k: v for k, v in era_points['result'].items() if k in session_validators}
     result['totalEraPoints'] = era_points['total']
 
     result['common']['currentEra'] = era
@@ -306,10 +287,8 @@ def construct_metrics(era, current_session, era_progress, session_progress, sess
     result['common']['average'] = int(Decimal(average(points_list)))
     result['common']['p95'] = int(Decimal(percentile(points_list, 95)))
 
-    result['validatorsChart'] = {k: list(dict(sorted(era_points['result'].items(), key=operator.itemgetter(
-        1), reverse=True)).keys()).index(k) for k in era_points['result'].keys() if k in session_validators}
-    result['paraValidatorsChart'] = {k: list(dict(sorted(raw_data.items(), key=operator.itemgetter(
-        1), reverse=True)).keys()).index(k) for k in raw_data.keys() if k in session_validators}
+    result['validatorsChart'] = {k: list(dict(sorted(era_points['result'].items(), key=operator.itemgetter(1), reverse=True)).keys()).index(k) for k in era_points['result'].keys() if k in session_validators}
+    result['paraValidatorsChart'] = {k: list(dict(sorted(raw_data.items(), key=operator.itemgetter(1), reverse=True)).keys()).index(k) for k in raw_data.keys() if k in session_validators}
 
     return result
 
@@ -329,27 +308,20 @@ def main():
             if current_session == start_session:
                 era_sessions = [current_session]
             else:
-                era_sessions = [i for i in range(
-                    start_session, current_session + 1)]
+                era_sessions = [i for i in range(start_session, current_session + 1)]
 
-            era_points = get_era_points(substrate_interface.request(
-                'Staking', 'ErasRewardPoints', [era]).value)
-            session_validators = substrate_interface.request(
-                'Session', 'Validators').value
-            paravalidators = substrate_interface.request(
-                'ParaSessionInfo', 'AccountKeys', [current_session]).value
+            era_points = get_era_points(substrate_interface.request('Staking', 'ErasRewardPoints', [era]).value)
+            session_validators = substrate_interface.request('Session', 'Validators').value
+            paravalidators = substrate_interface.request('ParaSessionInfo', 'AccountKeys', [current_session]).value
 
             if first_iter is True:
-                q_state.append(warmup_state(era, start_session,
-                               current_session, session_progress, era_points))
+                q_state.append(warmup_state(era, start_session, current_session, session_progress, era_points))
                 first_iter = False
 
             for validator in paravalidators:
-                calculate_session_points(
-                    validator, current_session, era_sessions, era_points)
+                calculate_session_points(validator, current_session, era_sessions, era_points)
 
-            metrics = construct_metrics(era, current_session, era_progress,
-                                        session_progress, session_validators, paravalidators, era_points)
+            metrics = construct_metrics(era, current_session, era_progress, session_progress, session_validators, paravalidators, era_points)
 
             q_metrics.clear()
             q_metrics.append(metrics)

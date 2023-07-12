@@ -40,8 +40,7 @@ class SUBSTRATE_INTERFACE:
             return r
         except (WebSocketConnectionClosedException, ConnectionRefusedError, SubstrateRequestException) as e:
             self.substrate.connect_websocket()
-            logging.critical(
-                'The substrate api call failed with error ' + str(e))
+            logging.critical('The substrate api call failed with error ' + str(e))
             r = None
 
     def rpc_request(self, method: str, params: str = None):
@@ -58,31 +57,27 @@ def get_era_points(data):
 
 
 def get_chain_info(chain, substrate_interface):
-    constants = {'polkadot': {'session_length': 2400, 'era_length': 14400},
-                 'kusama': {'session_length': 600, 'era_length': 3600}
-                 }
+    constants = {
+        'polkadot': {'session_length': 2400, 'era_length': 14400},
+        'kusama': {'session_length': 600, 'era_length': 3600}
+    }
 
     session_length = constants[chain]['session_length']
     era_length = constants[chain]['era_length']
 
-    current_era = substrate_interface.request(
-        'Staking', 'ActiveEra').value['index']
-    current_session = substrate_interface.request(
-        'Session', 'CurrentIndex').value
+    current_era = substrate_interface.request('Staking', 'ActiveEra').value['index']
+    current_session = substrate_interface.request('Session', 'CurrentIndex').value
 
-    eras_start_session_index = substrate_interface.request(
-        'Staking', 'ErasStartSessionIndex', [current_era]).value
+    eras_start_session_index = substrate_interface.request('Staking', 'ErasStartSessionIndex', [current_era]).value
 
     genesis_slot = substrate_interface.request('Babe', 'GenesisSlot').value
     current_slot = substrate_interface.request('Babe', 'CurrentSlot').value
 
-    session_start_slot = int(current_session) * \
-        int(session_length) + int(genesis_slot)
+    session_start_slot = int(current_session) * int(session_length) + int(genesis_slot)
     session_progress = int(current_slot) - int(session_start_slot)
 
     era_session_index = int(current_session) - int(eras_start_session_index)
-    era_progress = int(era_session_index) * \
-        int(session_length) + int(session_progress)
+    era_progress = int(era_session_index) * int(session_length) + int(session_progress)
 
     return {'current_era': current_era, 'eras_start_session_index': eras_start_session_index, 'current_session': current_session, 'era_progress': era_progress / era_length * 100, 'session_progress': session_progress / session_length * 100}
 
