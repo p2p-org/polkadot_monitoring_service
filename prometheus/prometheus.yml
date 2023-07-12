@@ -27,6 +27,18 @@ scrape_configs:
   - targets:
     - 'kusama_finality_exporter:9150'
 
+- job_name: polkadot_events_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'polkadot_events_exporter:9150'
+
+- job_name: kusama_events_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'kusama_events_exporter:9150'
+
 alerting:
   alertmanagers:
     - scheme: http
