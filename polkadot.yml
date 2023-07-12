@@ -3,7 +3,7 @@ version: '3.4'
 services:
   polkadot_common_exporter:
     build:
-      context: ./exporters
+      context: ./exporters/common
       args:
         exporter: "common_exporter"
     environment:
@@ -17,7 +17,7 @@ services:
 
   polkadot_finality_exporter:
     build:
-      context: ./exporters
+      context: ./exporters/common
       args:
         exporter: "finality_exporter"
     environment:
@@ -28,3 +28,11 @@ services:
     - ./polkadot.env
     networks:
     - exporters
+
+  polkadot_events_exporter:
+    build:
+      context: ./exporters/events
+    networks:
+    - exporters
+    env_file:
+    - ./polkadot.env

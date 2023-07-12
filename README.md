@@ -24,7 +24,9 @@ To `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentati
 * `polkadot_finality_roundProcessed`(chain) Processed round - Rounds processed
 * `polkadot_finality_prevotes`(chain,account) - Amount of prevoutes successed by validators
 * `polkadot_finality_precommits`(chain,account) - Amount of precommits succesed by validators (became to 2/3)
-
+* `polkadot_events`(chain,module,method) - Occured on-chain events counter
+* `polkadot_events_by_account`(chain,module,method,account) - Occured on-chain events with validator account
+    * `{method="DisputeConcluded",module="ParasDisputes"}` - accounts considering candidate is Invalid, but majority conclusion = Valid
 
 #### How to start
 
@@ -39,18 +41,19 @@ RPC_ENDPOINTS="http://your-node1:9933,http://your-node2:9933,http://your-node3:9
 
 3. Run the project:
     * `docker-compose -f docker-compose.yml -f polkadot.yml -f kusama.yml up -d`-  will start exporters for polkadot and kusama
-    * `docker-compose -f docker-compose.yml -f polkadot.yml` - will start expoters only for polkadot
-    * `docker-compose -f docker-compose.yml -f kusama.yml` - will start expoters only for kusama
+    * `docker-compose -f docker-compose.yml -f polkadot.yml` - will start exporters only for polkadot
+    * `docker-compose -f docker-compose.yml -f kusama.yml` - will start exporters only for kusama
 
 4. Inspect the [dashboard](http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1) (default username and password `admin`, `admin`)
 
 
 #### Notes
 
-* Finality expoter metrics `polkadot_finality_prevotes`, `polkadot_finality_precommits` are probablistic because data from `grandpa_roundState` call is instant and it depends when RPC call actually occurs in the begining of the round or at the end of the round. The more measurements (more RPC nodes present in config) than more accurate will be exposed metric
+* Finality exporter metrics `polkadot_finality_prevotes`, `polkadot_finality_precommits` are probablistic because data from `grandpa_roundState` call is instant and it depends when RPC call actually occurs in the begining of the round or at the end of the round. The more measurements (more RPC nodes present in config) than more accurate will be exposed metric
 
 
 #### References
 * https://github.com/polkascan/py-substrate-interface - Python Substrate Interface
+* https://github.com/itering/scale.go - Go implementation of scale codec
 * https://wiki.polkadot.network/ - Polkadot Wiki
 * https://polkadot.js.org/docs/ - Good to know
