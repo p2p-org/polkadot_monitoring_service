@@ -33,9 +33,22 @@ services:
     networks:
     - monitoring
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    restart: unless-stopped
+    ports:
+      - 9093:9093
+    volumes:
+      - ./alertmanager:/config
+      - alertmanager-data:/data
+    command: --config.file=/config/alertmanager.yml 
+    networks:
+    - monitoring
+
 volumes:
     prometheus_data: {}
     grafana_data: {}
+    alertmanager-data: {}
 
 networks:
   exporters: 
