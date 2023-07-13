@@ -301,8 +301,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -395,8 +394,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -469,8 +467,8 @@
         "allValue": "",
         "current": {
           "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "text": "kusama",
+          "value": "kusama"
         },
         "datasource": {
           "type": "prometheus",
@@ -478,7 +476,7 @@
         },
         "definition": "label_values(polkadot_events,chain)",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": false,
         "name": "chain",
         "options": [],
@@ -547,7 +545,7 @@
       {
         "allValue": "(.*)",
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -586,6 +584,6 @@
   "timezone": "",
   "title": "Polkadot/Kusama validator events",
   "uid": "kS4VbFLVz",
-  "version": 5,
+  "version": 1,
   "weekStart": ""
 }

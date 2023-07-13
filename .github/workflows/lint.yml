@@ -1,0 +1,26 @@
+name: lint
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  Promtool:
+    name: Promtool
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Check Prometheus alert rules
+      uses: peimanja/promtool-github-actions@master
+      with:
+        promtool_actions_subcommand: 'rules'
+        promtool_actions_files: 'prometheus/alert.yml'
+        promtool_actions_comment: true
+
+    - name: Check Prometheus config
+      uses: peimanja/promtool-github-actions@master
+      with:
+        promtool_actions_subcommand: 'config'
+        promtool_actions_files: 'prometheus/prometheus.yml'
+        promtool_actions_comment: true

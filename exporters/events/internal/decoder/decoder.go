@@ -69,7 +69,7 @@ func (d *Decoder) DecodeEvents(ctx context.Context, payload string) []dto.Event 
 			e := eventRecord.(map[string]interface{})
 			b, _ := json.Marshal(e["params"])
 			var p interface{}
-			json.Unmarshal(b, &p)
+			json.Unmarshal(b, &p) //nolint:golint,errcheck
 			events = append(events, dto.Event{
 				Type: dto.EventType{
 					ModuleId: e["module_id"].(string),
@@ -162,7 +162,7 @@ func (d *Decoder) DecodeExtrinsic(ctx context.Context, payload string) dto.Mappe
 	decoder.Process()
 	if b, err := json.Marshal(decoder.Value); err == nil {
 		var result dto.Mapped
-		json.Unmarshal(b, &result)
+		json.Unmarshal(b, &result) //nolint:golint,errcheck
 		return result
 	}
 	return nil

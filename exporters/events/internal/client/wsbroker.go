@@ -195,7 +195,7 @@ func (broker *WSMessageBroker) readContinuously(ctx context.Context) error {
 						Frame: frame.Frame,
 					}
 				} else {
-					broker.log.Warnf("no response channel found for subscription %d", subscriptionID)
+					broker.log.Warnf("no response channel found for subscription %s", subscriptionID)
 				}
 			} else {
 				// move subscription from init/123 to it's place

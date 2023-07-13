@@ -28,7 +28,7 @@ func main() {
 	}
 	loglvl, err := logrus.ParseLevel(cfg.LogLevel)
 	if err != nil {
-		l.WithError(err).Warn("unable to parse LOG_LEVEL %s", cfg.LogLevel)
+		l.WithError(err).Warnf("unable to parse LOG_LEVEL %s", cfg.LogLevel)
 		loglvl = logrus.InfoLevel
 	}
 	l.SetLevel(loglvl)
@@ -52,8 +52,8 @@ func main() {
 			fmt.Fprintf(w, "Ok")
 		}
 	})
-	go http.ListenAndServe(cfg.MetricsListen, nil)
-	go reader.Read(ctx)
+	go http.ListenAndServe(cfg.MetricsListen, nil) //nolint:golint,errcheck
+	go reader.Read(ctx)                            //nolint:golint,errcheck
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	l.Infof("Normal termination, signal %s", <-ch)
