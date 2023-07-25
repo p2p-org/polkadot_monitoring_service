@@ -1,11 +1,15 @@
+FROM golangci/golangci-lint:v1.53-alpine as linter
+WORKDIR /build/
+COPY . .
+RUN golangci-lint run
+
 FROM golang:1.20-alpine as builder
 
 WORKDIR /build/
-
-COPY go.mod go.sum ./
+COPY --from=linter /build/go.mod /build/go.sum ./
 RUN go mod download && go mod verify
 
-COPY . .
+COPY --from=linter /build/ .
 RUN \
   go build -v -o events-exporter ./cmd/events-exporter/
 
