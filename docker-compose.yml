@@ -45,11 +45,54 @@ services:
     networks:
     - monitoring
 
+  bot:
+    build:
+      context: ./bot
+    environment:
+    - "db_host=postgres"
+    - "db_port=5432"
+    env_file:
+    - ./bot.env
+    networks:
+    - "bot"
+
+  postgres:
+    container_name: postgres
+    image: postgres:13
+    environment:
+      POSTGRES_USER: adm
+      POSTGRES_PASSWORD: adm
+      PGDATA: /data/postgres
+    volumes:
+      - ./bot/db_scheme.sql:/docker-entrypoint-initdb.d/db.sql
+      - ./postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+    - "bot"
+
+      #  pgadmin:
+      #    container_name: pgadmin
+      #    image: dpage/pgadmin4
+      #    environment:
+      #      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      #      PGADMIN_DEFAULT_PASSWORD: adm
+      #      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      #    volumes:
+      #       - pgadmin:/var/lib/pgadmin
+      #
+      #    ports:
+      #    - "5050:80"
+      #    networks:
+      #    - "bot"
+
 volumes:
     prometheus_data: {}
     grafana_data: {}
     alertmanager-data: {}
+    pgadmin: {}
 
 networks:
+  bot:
   exporters: 
   monitoring:
