@@ -4,11 +4,13 @@ import os
 import asyncio
 from datetime import datetime, timezone
 from aiogram import Bot, Dispatcher
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.utils import executor
+from aiogram.fsm.storage.memory import MemoryStorage
 from handlers.setup import setup_message_handler
 #from webserver.setup import setup_webserver_handler
 from db import DB
+
+async def run_bot(bot,dp) -> None:
+    await dp.start_polling(bot)
 
 if __name__ == "__main__":
     admin_chat = os.environ['admin_chat']
@@ -24,8 +26,7 @@ if __name__ == "__main__":
 
     storage = MemoryStorage()
     bot = Bot(token=tg_token, parse_mode="HTML")
-    dp = Dispatcher(bot, storage=storage)
-
+    dp = Dispatcher()
     db = DB(db_name,db_user,db_pass,db_host,db_port)
 
     setup_message_handler('start')
@@ -37,4 +38,4 @@ if __name__ == "__main__":
 
 #    setup_webserver_handler('test')
 
-    executor.start_polling(dp, skip_updates=True)
+    asyncio.run(run_bot(bot,dp))

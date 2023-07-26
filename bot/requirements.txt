@@ -1,5 +1,4 @@
 requests
 psycopg2
-aiogram
-aiohttp
+aiogram>=3.0.0b
 pyyaml

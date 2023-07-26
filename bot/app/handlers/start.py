@@ -1,7 +1,8 @@
 from __main__ import dp, db, bot, admin_chat
 from aiogram.types import Message
+from aiogram.filters import Command
 
-@dp.message_handler(commands=["start"])
+@dp.message(Command(commands=["start"]))
 async def command_start(message: Message) -> None:
     if message.chat.type == 'group':
         await message.answer("🧑<200d>🤝<200d>🧑 Group chats are not allowed.\nSorry and have a good day.")

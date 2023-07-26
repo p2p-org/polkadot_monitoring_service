@@ -1,13 +1,15 @@
 from __main__ import dp, db, bot, admin_chat
 from fsm.support import Form
 from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from aiogram.dispatcher import FSMContext
+from aiogram.fsm.context import FSMContext
+from aiogram.filters import Command, StateFilter
 
-@dp.message_handler(commands=["support"])
+
+@dp.message(Command(commands=["support"]))
 async def command_support(message: Message, state: FSMContext) -> None:
     if str(message.chat.id).startswith('-'):
         await message.answer("Group chats are not allowed.\nSorry and have a good day.",reply_markup=ReplyKeyboardRemove())
-        await state.reset_state()
+        await state.clear()
         return
 
     username = message.chat.username
@@ -17,24 +19,24 @@ async def command_support(message: Message, state: FSMContext) -> None:
 
     if not status:
         await message.answer("You have no registered yet.\nPlease call /start.",reply_markup=ReplyKeyboardRemove())
-        await state.reset_state()
+        await state.clear()
         return
 
     if support_status == 'active':
         await message.answer("You already have an active support conversation.\nPlease wait until admin close it.",reply_markup=ReplyKeyboardRemove())
-        await state.reset_state()
+        await state.clear()
         return
 
     if status == 'banned':
         await message.answer("Your account has been banned 🤷\nSorry and have a good day.",reply_markup=ReplyKeyboardRemove())
-        await state.reset_state()
+        await state.clear()
         return
 
     await state.set_state(Form.support)
     await message.answer("Please enter your message.",reply_markup=ReplyKeyboardRemove())
     await bot.send_message(admin_chat, "Username: @{} ID: {}\nHas just opened support chat conversation.".format(username,chat_id),reply_markup=ReplyKeyboardRemove())
 
-@dp.message_handler(state=Form.support)
+@dp.message(StateFilter(Form.support))
 async def process_support(message: Message, state: FSMContext) -> None:
     username = message.chat.username
     chat_id = message.from_user.id
@@ -42,7 +44,7 @@ async def process_support(message: Message, state: FSMContext) -> None:
     if message.text:
         if '/' in message.text:
             await message.answer("Unexpected charaster in your message.",reply_markup=ReplyKeyboardRemove())
-            await state.reset_state()
+            await state.clear()
             return
 
         await bot.send_message(admin_chat, "Username: @{}\nMessage:\n{}\n\nCommands:\n/support_reply {} Your answer.\n/deactivate_support {}\n/ban {}".format(username,message.text,chat_id,chat_id,chat_id),reply_markup=ReplyKeyboardRemove())
@@ -51,11 +53,11 @@ async def process_support(message: Message, state: FSMContext) -> None:
         await bot.send_photo(admin_chat,message.photo[0].file_id)
         await bot.send_message(admin_chat, "Username: @{} + \nCaption: {}\n\nCommands:\n/support_reply {} Your answer.\n/deactivate_support {}\n/ban {}".format(username,message.caption,chat_id,chat_id,chat_id),reply_markup=ReplyKeyboardRemove())
 
-    await state.reset_state()
+    await state.clear()
     db.update_record(chat_id,'support_status','active')
     return
 
-@dp.message_handler(commands=["support_reply"])
+@dp.message(Command(commands=["support_reply"]))
 async def command_support_reply(message: Message) -> None:
     username = message.chat.username
     chat_id = message.from_user.id
@@ -72,7 +74,7 @@ async def command_support_reply(message: Message) -> None:
         await message.reply("Replied.\n\nCommands:\n/deactivate_support {chat_id}\n/ban {chat_id}".format(chat_id=chat_id),reply_markup=ReplyKeyboardRemove())
         await bot.send_message(chat_id, "Message from P2P team:\n{}".format(answer),reply_markup=ReplyKeyboardRemove())
 
-@dp.message_handler(commands=["deactivate_support"])
+@dp.message(Command(commands=["deactivate_support"]))
 async def command_deactivate_support(message: Message) -> None:
     if str(message.chat.id) == admin_chat:
         try:
