@@ -45,16 +45,16 @@ services:
     networks:
     - monitoring
 
-  bot:
-    build:
-      context: ./bot
-    environment:
-    - "db_host=postgres"
-    - "db_port=5432"
-    env_file:
-    - ./bot.env
-    networks:
-    - "bot"
+      #  bot:
+      #    build:
+      #      context: ./bot
+      #    environment:
+      #    - "db_host=postgres"
+      #    - "db_port=5432"
+      #    env_file:
+      #    - ./bot.env
+      #    networks:
+      #    - "bot"
 
   postgres:
     container_name: postgres
