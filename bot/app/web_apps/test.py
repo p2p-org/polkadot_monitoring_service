@@ -1,10 +1,9 @@
-from pathlib import Path
+from __main__ import dp, db, bot, admin_chat
 from aiohttp.web_request import Request
 from aiohttp.web_response import json_response
 from aiogram.types import WebAppInfo
-from __main__ import bot
 
-async def test_handler(request: Request):
+async def test(request: Request):
     data = await request.post()
     
     if data["id"]:

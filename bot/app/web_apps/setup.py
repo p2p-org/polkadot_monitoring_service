@@ -1,7 +1,8 @@
 from importlib import import_module
 
 __all__ = [
-    "setup_web_apps",
+    "setup_web_handler",
+    "setup_message_handler"
 ]
 
 def setup_web_handler(web_app):

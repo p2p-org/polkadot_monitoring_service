@@ -1,9 +1,8 @@
 from functions import destroy
 from __main__ import dp, db, bot, admin_chat
 from aiogram.types import Message
-from aiogram.filters import Command
 
-@dp.message(Command(commands=["destroy"]))
+@dp.message_handler(commands=["destroy"])
 async def command_destroy(message: Message) -> None:
     if str(message.chat.id) == admin_chat:
         initializator = 'admin'

@@ -1,8 +1,7 @@
-from __main__ import dispatcher, db, bot, admin_chat
+from __main__ import dp, db, bot, admin_chat
 from aiogram.types import Message
-from aiogram.filters import Command
 
-@dispatcher.message(Command(commands=["ban"]))
+@dp.message_handler(commands=["ban"])
 async def command_ban(message: Message) -> None:
     if str(message.chat.id) == admin_chat:
         try:
