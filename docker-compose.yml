@@ -48,16 +48,16 @@ services:
     networks:
     - monitoring
 
-  nginx:
-    container_name: bot
-    image: nginx
-    ports:
-     - 8080:8080
-    volumes:
-    - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-    - ./nginx/access.log:/var/log/nginx/test.com.access.log
-    networks:
-    - monitoring
+#  nginx:
+#    container_name: bot
+#    image: nginx
+#    ports:
+#     - 8080:8080
+#    volumes:
+#    - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+#    - ./nginx/access.log:/var/log/nginx/test.com.access.log
+#    networks:
+#    - monitoring
 
 volumes:
     prometheus_data: {}
