@@ -70,6 +70,9 @@ class DB():
                 colnames = [desc[0] for desc in self._cursor.description]
                 rows = self._cursor.fetchall()
 
+                if len(list(rows)) == 1:
+                    return rows[0][0]
+
                 for row in rows:
                     idx = 0
                     row_data = {}
@@ -107,28 +110,16 @@ class DB():
         self._connection = None
         self._cursor = None
 
-    def get_record(self,chat_id,field):
+    def get_records(self,field,key,value):
         try:
-            result = self.query(SQL('SELECT {} FROM {} WHERE {} = {}').format(Identifier(field),Identifier('maas_bot'),Identifier('id'),Literal(chat_id)))[0][field]
+            result = self.query(SQL('SELECT {} FROM {} WHERE {} = {}').format(Identifier(field),Identifier('maas_bot'),Identifier(key),Literal(value)))
         except (IndexError,KeyError):
             result = None
 
         return result
 
-    def add_account(self,chat_id,username,data,status,support_status):
-        t = []
-
-        if 'validators' in data:
-            for k,v in data['validators'].items():
-                if k == 'polkadot' or k == 'kusama':
-                    for validator in v:
-                        t.append(validator)
-
-            validators = ' '.join(t)
-        else:
-            validators = data
-
-        values = SQL(', ').join(Literal(i) for i in [chat_id,username,validators,status,support_status])
+    def add_account(self,chat_id,username):
+        values = SQL(', ').join(Literal(i) for i in [chat_id,username])
         self.query(SQL('INSERT INTO {} VALUES ({})').format(Identifier('maas_bot'),values))
 
         self.commit()
@@ -140,11 +131,3 @@ class DB():
     def delete_account(self,chat_id):
         self.query(SQL('DELETE FROM {} WHERE {} = {}').format(Identifier('maas_bot'),Identifier('id'),Literal(chat_id)))
         self.commit()
-
-    def get_count(self):
-        result = self.query(SQL('SELECT COUNT(*) FROM {} WHERE deploy_time >= now() - interval \'5 minute\'').format(Identifier('maas_bot')))
-        
-        try:
-            return result[0]['count']
-        except (IndexError,KeyError):
-            return 0

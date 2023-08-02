@@ -44,17 +44,21 @@ services:
     command: --config.file=/config/alertmanager.yml 
     networks:
     - monitoring
+    - bot
 
-      #  bot:
-      #    build:
-      #      context: ./bot
-      #    environment:
-      #    - "db_host=postgres"
-      #    - "db_port=5432"
-      #    env_file:
-      #    - ./bot.env
-      #    networks:
-      #    - "bot"
+  bot:
+    build:
+      context: ./bot
+    environment:
+    - "db_host=postgres"
+    - "db_port=5432"
+    env_file:
+    - ./bot.env
+    ports:
+    - "8080:8080"
+    networks:
+    - bot
+    - postgres
 
   postgres:
     container_name: postgres
@@ -64,29 +68,30 @@ services:
       POSTGRES_PASSWORD: adm
       PGDATA: /data/postgres
     volumes:
-      - ./bot/db_scheme.sql:/docker-entrypoint-initdb.d/db.sql
-      - ./postgres:/data/postgres
+    - ./bot/db_scheme.sql:/docker-entrypoint-initdb.d/db.sql
+    - postgres:/data/postgres
     ports:
-      - "5432:5432"
+    - "5432:5432"
     networks:
-    - "bot"
+    - postgres
 
-      #  pgadmin:
-      #    container_name: pgadmin
-      #    image: dpage/pgadmin4
-      #    environment:
-      #      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
-      #      PGADMIN_DEFAULT_PASSWORD: adm
-      #      PGADMIN_CONFIG_SERVER_MODE: 'False'
-      #    volumes:
-      #       - pgadmin:/var/lib/pgadmin
-      #
-      #    ports:
-      #    - "5050:80"
-      #    networks:
-      #    - "bot"
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: adm
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+       - pgadmin:/var/lib/pgadmin
+
+    ports:
+    - "5050:80"
+    networks:
+    - postgres
 
 volumes:
+    postgres: {}
     prometheus_data: {}
     grafana_data: {}
     alertmanager-data: {}
@@ -96,3 +101,4 @@ networks:
   bot:
   exporters: 
   monitoring:
+  postgres:

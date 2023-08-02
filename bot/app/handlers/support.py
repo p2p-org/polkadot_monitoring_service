@@ -1,7 +1,10 @@
 from __main__ import dp, db, bot, admin_chat
-from fsm.support import Form
 from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
+
+class Form(StatesGroup):
+    support = State()
 
 @dp.message_handler(commands=["support"])
 async def command_support(message: Message, state: FSMContext) -> None:
@@ -12,21 +15,21 @@ async def command_support(message: Message, state: FSMContext) -> None:
 
     username = message.chat.username
     chat_id = message.from_user.id
-    status = db.get_record(chat_id,'status')
-    support_status = db.get_record(chat_id,'support_status')
+    account_status = db.get_records('account_status','id',chat_id)
+    support_status = db.get_records('support_status','id',chat_id)
 
-    if not status:
+    if not account_status:
         await message.answer("You have no registered yet.\nPlease call /start.",reply_markup=ReplyKeyboardRemove())
         await state.reset_state()
         return
 
-    if support_status == 'active':
+    if support_status == 'on':
         await message.answer("You already have an active support conversation.\nPlease wait until admin close it.",reply_markup=ReplyKeyboardRemove())
         await state.reset_state()
         return
 
-    if status == 'banned':
-        await message.answer("Your account has been banned 🤷\nSorry and have a good day.",reply_markup=ReplyKeyboardRemove())
+    if account_status == 'off':
+        await message.answer("Your account has been disabled 🤷\nSorry and have a good day.",reply_markup=ReplyKeyboardRemove())
         await state.reset_state()
         return
 
@@ -52,7 +55,7 @@ async def process_support(message: Message, state: FSMContext) -> None:
         await bot.send_message(admin_chat, "Username: @{} + \nCaption: {}\n\nCommands:\n/support_reply {} Your answer.\n/deactivate_support {}\n/ban {}".format(username,message.caption,chat_id,chat_id,chat_id),reply_markup=ReplyKeyboardRemove())
 
     await state.reset_state()
-    db.update_record(chat_id,'support_status','active')
+    db.update_record(chat_id,'support_status','on')
     return
 
 @dp.message_handler(commands=["support_reply"])
@@ -82,4 +85,4 @@ async def command_deactivate_support(message: Message) -> None:
             return
 
     await message.reply("Deactivated.",reply_markup=ReplyKeyboardRemove())
-    db.update_record(chat_id,'support_status','inactive')
+    db.update_record(chat_id,'support_status','off')

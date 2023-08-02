@@ -10,12 +10,12 @@ async def command_unban(message: Message) -> None:
             await message.reply("Expected an userId as argument.")
             return
 
-        status = db.get_record(chat_id,'status')
+        account_status = db.get_records('account_status','id',chat_id)
 
-        if status == 'banned':
+        if account_status == 'off':
+            db.update_record(chat_id,'account_status','on')
             await message.reply("Unbanned.")
-            await bot.send_message(chat_id, "Your account has unbanned by our team.\nFeel free to contact us /support if any questions.")
-            db.update_record(chat_id,'status','inactive')
+            await bot.send_message(chat_id, "Your account has enabled by our team.\nFeel free to contact us /support if any questions.")
         else:
-            await message.reply("Wrong status: " + str(status))
+            await message.reply("Wrong status: " + str(account_status))
 

@@ -26,12 +26,12 @@ SET default_table_access_method = heap;
 CREATE TABLE public.maas_bot (
     id bigint NOT NULL,
     username text,
-    validators text,
-    status text,
-    support_status text,
+    account_status text DEFAULT 'on',
+    grafana_status text DEFAULT 'off',
+    promalert_status text DEFAULT 'off',
+    support_status text DEFAULT 'off',
     creation_time timestamp without time zone DEFAULT now(),
-    deploy_time timestamp without time zone,
-    retries_count integer DEFAULT 0
+    grafana_deploy_time timestamp without time zone
 );
 ALTER TABLE public.maas_bot OWNER TO adm;
 ALTER TABLE ONLY public.maas_bot
