@@ -2,6 +2,7 @@ version: '3.4'
 
 services:
   kusama_common_exporter:
+    container_name: kusama_common_exporter
     build:
       context: ./exporters/common
       args:
@@ -16,6 +17,7 @@ services:
     - exporters
 
   kusama_finality_exporter:
+    container_name: kusama_finality_exporter
     build:
       context: ./exporters/common
       args:
@@ -30,6 +32,7 @@ services:
     - exporters
 
   kusama_events_exporter:
+    container_name: kusama_events_exporter
     build:
       context: ./exporters/events
     networks:
