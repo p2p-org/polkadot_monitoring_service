@@ -57,7 +57,7 @@ In current version bot represents:
 * `polkadot_pv_pointsP95`(chain,account) ParaValidator points ration 95 percentile
 * `polkadot_pv_eraPoints`(chain,account) Amount of points earned by ParaValidator in current session
 * `polkadot_pv_paraValidatorsChart`(chain,account) ParaValidator's position from best to worst
-#### Finaloty exporter
+#### Finality exporter
 * `polkadot_finality_roundProcessed`(chain) Processed round - Rounds processed
 * `polkadot_finality_prevotes`(chain,account) - Amount of success prevoutes by validators
 * `polkadot_finality_precommits`(chain,account) - Amount of success precommits by validators (became to 2/3)
