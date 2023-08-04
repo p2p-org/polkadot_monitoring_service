@@ -15,7 +15,7 @@ jobs:
       uses: peimanja/promtool-github-actions@master
       with:
         promtool_actions_subcommand: 'rules'
-        promtool_actions_files: 'prometheus/alert.yml'
+        promtool_actions_files: 'prometheus/alerts.yml'
         promtool_actions_comment: true
 
     - name: Check Prometheus config
