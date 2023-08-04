@@ -1,0 +1,36 @@
+---
+groups:
+- name: maas rules
+  rules:
+  - alert: Finality exporter availibility
+    expr: up{job=~"(.*)_finality_exporter"} == 0
+    for: 2m
+    labels:
+      severity: high
+    annotations:
+      summary: "{{ $labels.job }}: Finality exporter is down."
+      description: "Finality exporter {{ $labels.job }} is down."
+  - alert: Common exporter availibility
+    expr: up{job=~"(.*)_common_exporter"} == 0
+    for: 2m
+    labels:
+      severity: high
+    annotations:
+      summary: "{{ $labels.job }}: Common exporter is down."
+      description: "Common exporter {{ $labels.job }} is down."
+  - alert: Kusama GRANDPA precommits ratio(critical)
+    expr: (polkadot_finality_precommits{chain="kusama"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < 10 and on(instance) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 18
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "{{ $labels.job }}: Validator has problem with block finality(precommits) less than 33%"
+      description: "Validator {{ $labels.job }} has problem with block finality(precommits) less than 33%"
+  - alert: Kusama GRANDPA prevotes ratio
+    expr: (polkadot_finality_prevotes{chain="kusama"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < 80 and on(instance) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 18
+    for: 2m
+    labels:
+      severity: high
+    annotations:
+      summary: "{{ $labels.job }}: Validator has problem with block finality(prevotes) less than 80%"
+      description: "Validator {{ $labels.job }} has problem with block finality(prevotes) less than 80%"
