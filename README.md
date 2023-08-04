@@ -1,13 +1,13 @@
 # Polkadot monitoring service
 ## Project overview
-Monitoring as a Service in general possibility to get dashboard or subscribe on network events with using telegram bot(For experienced and demanding we also plan to provide API). Project build on top of the well known open-source monitoring solutions: Prometheus, Grafana, Alertmanager and represents a set of exporters, bot and web api.
-
+Monitoring as a Service in general possibility to get a dashboard with some important metrics about ALL validators in polkadot or subscribe on network events with using a flexible filters. All it possible by the Telegram bot. 
+For experienced and demanding we also plan to provide an API. Project build on top of the well known open-source monitoring solutions: Prometheus, Grafana, Alertmanager and represents a set of exporters, bot and web api.
 
 ![](docs/Common.png)
 
 
 ## Two service implementations
-### Portable version(current project):
+1. ### Portable version(current project):
 * Full exporters collection (please see picture or read an explanation of each below)
 * Prometheus with minimal set os alert expressions. Alert manager connected.
 * Alertmanager with webhook sender and route(send alerts to bot)
@@ -17,8 +17,11 @@ Monitoring as a Service in general possibility to get dashboard or subscribe on 
 Everything dockerised. docker-compose.yml is presented.
 > **NOTE** In **portable** version deploy of grafana and bot are independents. Bot just generate and save local values.yml file. 
 
-### MaaS
-We maintain infra and provide all necessary things. Metrics TTL = 30days.
+2. ### MaaS
+* We maintain infra and provide all necessary things. 
+* Metrics TTL = 30days.
+* 24/7/365 availability.
+
 
 ## Bot 
 Build or deploy grafana instances, subscribe on blockchain events, or just to have positive conversation with our team in rt. All it possible by Telegram bot.
@@ -28,9 +31,14 @@ In current version bot represents:
 * Simple support
 * Administrators area(group chat)
 
+### What administrators can do
+* Enable/Disable accounts
+* Participate in support conversation with client. Even can text to any client thgrough bot.
+* Destroy grafana instance 
+* Subscribtions control for each client. (In future)
+
+
 ## Metrics
-
-
 * `polkadot_staking_currentEra`(chain) Current era
 * `polkadot_staking_eraProgress`(chain) Era progress in percents
 * `polkadot_staking_totalPoints`(chain) Amount of points earned by whole network
@@ -53,8 +61,8 @@ In current version bot represents:
     * Event examples `Balances.Deposit`, `Balances.Locked`, `Balances.Reserved`, `Balances.Transfer`, `Balances.Unlocked`, `Balances.Upgraded`, `Balances.Withdraw`, `ImOnline.SomeOffline`, `Proxy.ProxyAdded`, `Staking.Bonded`, `Staking.Chilled`, `Staking.PayoutStarted`, `Staking.Rewarded`, `Staking.SlashReported`, `Staking.Unbonded`, `Staking.ValidatorPrefsSet`, `Staking.Withdrawn`, `TransactionPayment.TransactionFeePaid`, `VoterList.Rebagged`, `VoterList.ScoreUpdated`
     * `ParasDisputes.DisputeConcluded` - accounts considering candidate is Invalid, but majority conclusion = Valid
 
-## How to run
 
+## How to run
 1. Install Docker and Docker Compose from https://docs.docker.com/engine/install/ or any other compose compatible tool and container runtime
 
 2. (Optional) Add RPC endpoints to config files `polkadot.env` and `kusama.env` in the following format:
@@ -63,7 +71,7 @@ In current version bot represents:
 WS_ENDPOINT="ws://your-node1:9944"
 WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:9944/"
 ```
-3. Configure bot by adding telegram bot api token and group chatId for administrators to `bot.env` Use `@botfather` to create bot. 
+3. Configure bot by adding telegram bot api token and group chatId for administrators to `bot.env` Use `@botfather` to create bot. Don't forget to add your bot to administrators group.  
 
 4. Run the project:
     * via make:
@@ -76,6 +84,7 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
         * `docker-compose -f docker-compose.yml -f polkadot.yml up` - will start exporters only for polkadot
         * `docker-compose -f docker-compose.yml -f kusama.yml up` - will start exporters only for kusama
 
+
 ## How to use and test
 1. Inspect the [dashboard](http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1) (default username and password `admin`, `admin`)
 
@@ -85,8 +94,8 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 
 4. Subscribe/Unsubscribe on alerts from prometheus. You can always add your own expressions to `prometheus/alerts.yml`
 
-### References
 
+### References
 * https://github.com/polkascan/py-substrate-interface - Python Substrate Interface. Many thanks to `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentation which successfully used in exporters.
 * https://github.com/itering/scale.go - Go implementation of scale codec
 * https://wiki.polkadot.network/ - Polkadot Wiki
