@@ -1,6 +1,6 @@
 # Polkadot monitoring service
 ## Project overview
-Monitoring as a Service in general possibility to get a dashboard with some important metrics about ALL validators in polkadot or subscribe on network events with using a flexible filters. All it possible by the Telegram bot. 
+Monitoring as a Service in general possibility to get a dashboard with some important metrics about ALL validators in polkadot or subscribe on network events with using a flexible filters. All it possible by the Telegram bot written with using AIOgram and AIOHTTP. 
 For experienced and demanding we also plan to provide an API. Project build on top of the well known open-source monitoring solutions: Prometheus, Grafana, Alertmanager and represents a set of exporters, bot and web api.
 
 ![](docs/Common.png)
@@ -100,7 +100,18 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 
 3. Try to build or destroy grafana instance(actually only `values.yml` generates)
 
-4. Subscribe/Unsubscribe on alerts from prometheus. You can always add your own expressions to `prometheus/alerts.yml`
+4. Subscribe/Unsubscribe on alerts from prometheus.
+
+
+
+## Customisation
+### Bot
+There are two reasonable things which possible to customize:
+1. By adding/editing or disabling message handlers. `./bot/app/handlers/`. [Here](./docs/message_handlers.md)
+2. By adding/editing or disabling web apps. `./bot/app/web_apps`. [Here](./docs/web_apps.md)
+
+### Prometheus alerting expressions
+Official [doc](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/). `./prometheus/alerts.yml`
 
 
 
@@ -109,3 +120,5 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 * https://github.com/itering/scale.go - Go implementation of scale codec
 * https://wiki.polkadot.network/ - Polkadot Wiki
 * https://polkadot.js.org/docs/ - Good to know
+* https://docs.aiogram.dev/en/latest/ - AIOgram
+* https://docs.aiohttp.org/en/stable/ - AIOHTTP
