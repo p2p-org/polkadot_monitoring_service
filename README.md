@@ -6,6 +6,7 @@ For experienced and demanding we also plan to provide an API. Project build on t
 ![](docs/Common.png)
 
 
+
 ## Two service implementations
 1. ### Portable version(current project):
 * Full exporters collection (please see picture or read an explanation of each below)
@@ -23,6 +24,7 @@ Everything dockerised. docker-compose.yml is presented.
 * 24/7/365 availability.
 
 
+
 ## Bot 
 Build or deploy grafana instances, subscribe on blockchain events, or just to have positive conversation with our team in rt. All it possible by Telegram bot.
 In current version bot represents:
@@ -38,7 +40,9 @@ In current version bot represents:
 * Subscribtions control for each client. (In future)
 
 
+
 ## Metrics
+#### Common exporter
 * `polkadot_staking_currentEra`(chain) Current era
 * `polkadot_staking_eraProgress`(chain) Era progress in percents
 * `polkadot_staking_totalPoints`(chain) Amount of points earned by whole network
@@ -53,13 +57,16 @@ In current version bot represents:
 * `polkadot_pv_pointsP95`(chain,account) ParaValidator points ration 95 percentile
 * `polkadot_pv_eraPoints`(chain,account) Amount of points earned by ParaValidator in current session
 * `polkadot_pv_paraValidatorsChart`(chain,account) ParaValidator's position from best to worst
+#### Finaloty exporter
 * `polkadot_finality_roundProcessed`(chain) Processed round - Rounds processed
 * `polkadot_finality_prevotes`(chain,account) - Amount of success prevoutes by validators
 * `polkadot_finality_precommits`(chain,account) - Amount of success precommits by validators (became to 2/3)
+#### Events exporter
 * `polkadot_events`(chain,module,method) - Occurred on-chain events counter
 * `polkadot_events_by_account`(chain,module,method,account) - Occurred on-chain events with validator account
     * Event examples `Balances.Deposit`, `Balances.Locked`, `Balances.Reserved`, `Balances.Transfer`, `Balances.Unlocked`, `Balances.Upgraded`, `Balances.Withdraw`, `ImOnline.SomeOffline`, `Proxy.ProxyAdded`, `Staking.Bonded`, `Staking.Chilled`, `Staking.PayoutStarted`, `Staking.Rewarded`, `Staking.SlashReported`, `Staking.Unbonded`, `Staking.ValidatorPrefsSet`, `Staking.Withdrawn`, `TransactionPayment.TransactionFeePaid`, `VoterList.Rebagged`, `VoterList.ScoreUpdated`
     * `ParasDisputes.DisputeConcluded` - accounts considering candidate is Invalid, but majority conclusion = Valid
+
 
 
 ## How to run
@@ -85,6 +92,7 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
         * `docker-compose -f docker-compose.yml -f kusama.yml up` - will start exporters only for kusama
 
 
+
 ## How to use and test
 1. Inspect the [dashboard](http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1) (default username and password `admin`, `admin`)
 
@@ -95,7 +103,8 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 4. Subscribe/Unsubscribe on alerts from prometheus. You can always add your own expressions to `prometheus/alerts.yml`
 
 
-### References
+
+## References
 * https://github.com/polkascan/py-substrate-interface - Python Substrate Interface. Many thanks to `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentation which successfully used in exporters.
 * https://github.com/itering/scale.go - Go implementation of scale codec
 * https://wiki.polkadot.network/ - Polkadot Wiki
