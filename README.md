@@ -38,6 +38,7 @@ In current version bot represents:
 * Participate in support conversation with client. Even can text to any client thgrough bot.
 * Destroy grafana instance 
 * Subscribtions control for each client. (In future)
+> **NOTE** Administrators receive into group chat each event client did with bot(completed action). 
 
 
 
