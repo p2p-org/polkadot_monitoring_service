@@ -104,11 +104,11 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 
 
 
-## Customisation
+## Customization
 ### Bot
-There are two reasonable things which possible to customize:
-1. By adding/editing or disabling message handlers. `./bot/app/handlers/`. [Here](./docs/message_handlers.md)
-2. By adding/editing or disabling web apps. `./bot/app/web_apps`. [Here](./docs/web_apps.md)
+There are two reasonable things which is possible to customize:
+1. **Message handlers** [./bot/app/handlers/](./bot/app/handlers/)  [Here](./docs/message_handlers.md) is an explanation. Highly desirable at least understand `asyncio` and `aiogram` python libraries.
+2. **Web apps** [./bot/app/web_apps](./bot/app/web_apps)  [Here](./docs/web_apps.md) is an explanation. Highly desirable at least understand `asyncio` and `aiohttp` python libraries.
 
 ### Prometheus alerting expressions
 Official [doc](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/). `./prometheus/alerts.yml`
