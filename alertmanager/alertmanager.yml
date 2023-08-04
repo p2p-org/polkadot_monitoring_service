@@ -1,12 +1,11 @@
 route:
-  receiver: 'tg-webhook
+  receiver: tg-webhook
   repeat_interval: 4h
-  group_by: [ alertname ]
+  group_by: [ '...' ]
 
 
 receivers:
-  - name: 'tg-webhook'
+  - name: tg-webhook
     webhook_configs:
-    - url: http://maas-bot
+    - url: http://bot:8080/prom_alert
       send_resolved: false
-      
