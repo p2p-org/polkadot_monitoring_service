@@ -4,7 +4,7 @@
 
 Monitoring as a Service is a tool to track important metrics about ALL validators in Polkadot and Kusama networks using a user-friendly dashboard or subscribe to network events using flexible filters via the Telegram bot. For experienced and demanding we also plan to provide an API. The project is built on top of the well-known open-source monitoring solutions: Prometheus, Grafana, and Alertmanager and represents a set of exporters, a tg bot (written using AIOgram and AIOHTTP), and web API.
 
-!https://github.com/p2p-org/polkadot_monitoring_service/raw/main/docs/Common.png
+![](docs/Common.png)
 
 ## Service implementations
 
