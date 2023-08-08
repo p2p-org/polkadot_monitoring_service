@@ -23,7 +23,7 @@ In the current repository, we provide:
 
 Everything dockerised. docker-compose.yml is presented.
 
-2. Monitoring as a Service
+2. Monitoring as a Service (cloud version of a service)
 - Available via @p2pvalidator_monitoring_bot
 - We maintain infrastructure and provide all support. No need to host anything.
 - Metrics TTL = 30 days.
@@ -32,13 +32,13 @@ Everything dockerised. docker-compose.yml is presented.
 ## Components
 
 1. Telegram Bot
-- Grafana instance deploy/destroy
-- Prometheus alerts enable/disable
-- Simple support
+- Grafana instance deploy/destroy option
+- Prometheus alerts enable/disable option
+- Users support
 - Administrators area(group chat)
-    - What administrators can do
+    - What administrators can do:
     - Enable/Disable accounts
-    - Participate in support conversations with clients. Even can text any client through a bot.
+    - Participate in support conversations with clients. Can text any client through a bot.
     - Destroy grafana instance
 
 > NOTE Administrators receive into group chat each event client did with the bot (completed action).
@@ -96,7 +96,7 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 3. Inspect the [dashboard](http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1) (default username and password `admin`, `admin`)
 4. Inspect the tg bot:
     1. Contact with your bot. Command `/start` will be good:)
-    2. Try to build or destroy grafana instance(local version generates only `values.yml` which needed to provide to Gra)
+    2. Try to build or destroy grafana instance(local version generates only `values.yml` which needed to provide to Grafana)
     3. Subscribe/Unsubscribe on alerts from prometheus.
 
 ## References
