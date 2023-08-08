@@ -23,7 +23,7 @@ In the current repository, we provide:
 
 Everything dockerised. docker-compose.yml is presented.
 
-1. Monitoring as a Service
+2. Monitoring as a Service
 - Available via @p2pvalidator_monitoring_bot
 - We maintain infrastructure and provide all support. No need to host anything.
 - Metrics TTL = 30 days.
@@ -78,8 +78,6 @@ Events exporter:
 
 ## How to setup, run, and test
 
-### Events exporters and Grafana dashboard
-
 1. Install Docker and Docker Compose from https://docs.docker.com/engine/install/ or any other compose-compatible tool and container runtime
 2. (Optional) Add RPC endpoints to config files `polkadot.env` and `kusama.env` in the following format:
 
@@ -101,15 +99,6 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
     2. Try to build or destroy grafana instance(local version generates only `values.yml` which needed to provide to Gra)
     3. Subscribe/Unsubscribe on alerts from prometheus.
 
-## Customization
-
-### Bot
-
-There are two reasonable things which is possible to customize:
-
-1. **[Message handlers](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/bot/app/handlers)**[Here](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/docs/message_handlers.md) is an our explanation. Highly desirable to understand asyncio and aiogram python libraries.
-2. **[Web apps](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/bot/app/web_apps)**[Here](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/docs/web_apps.md) is an our explanation. Highly desirable to understand asyncio and aiohttp python libraries.
-
 ## References
 
 - https://github.com/polkascan/py-substrate-interface - Python Substrate Interface. Many thanks to `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentation which successfully used in exporters.
@@ -118,4 +107,3 @@ There are two reasonable things which is possible to customize:
 - https://polkadot.js.org/docs/ - Good to know
 - https://docs.aiogram.dev/en/latest/ - AIOgram
 - https://docs.aiohttp.org/en/stable/ - AIOHTTP
-- [doc](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/).  — Prometheus alerting expressions [./prometheus/alerts.yml](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/prometheus/alerts.yml)
