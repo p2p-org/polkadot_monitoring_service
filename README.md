@@ -1,127 +1,121 @@
 # Polkadot monitoring service
-## Project overview
-Monitoring as a Service in general possibility to get a dashboard with some important metrics about ALL validators in polkadot or subscribe on network events with using a flexible filters. All it possible by the Telegram bot written with using AIOgram and AIOHTTP. 
-For experienced and demanding we also plan to provide an API. Project build on top of the well known open-source monitoring solutions: Prometheus, Grafana, Alertmanager and represents a set of exporters, bot and web api.
+
+## Project Overview
+
+Monitoring as a Service is a tool to track important metrics about ALL validators in Polkadot and Kusama networks using a user-friendly dashboard or subscribe to network events using flexible filters via the Telegram bot. For experienced and demanding we also plan to provide an API. The project is built on top of the well-known open-source monitoring solutions: Prometheus, Grafana, and Alertmanager and represents a set of exporters, a tg bot (written using AIOgram and AIOHTTP), and web API.
 
 ![](docs/Common.png)
 
+## Service implementations
 
+1. Portable version(current project):
 
-## Two service implementations
-1. ### Portable version(current project):
-* Full exporters collection (please see picture or read an explanation of each below)
-* Prometheus with minimal set os alert expressions. Alert manager connected.
-* Alertmanager with webhook sender and route(send alerts to bot)
-* Grafana with provisioned dashboard which contains some useful graphics not more. We work nonstop on improvements and very soon will provide new version with all necessary explanations.
-* Telegram bot
+> NOTE In the portable version deploy of Grafana and the bot are independent. Bot just generates and saves local values.yml file.
+> 
+
+In the current repository, we provide:
+
+- Full exporters collection (please see a picture above or read an explanation of each below)
+- Prometheus with a minimal set of alert expressions. Alert manager connected.
+- Alertmanager with webhook sender and route(send alerts to the bot)
+- Grafana with a provisioned dashboard that contains some useful graphics
+- Telegram bot
 
 Everything dockerised. docker-compose.yml is presented.
-> **NOTE** In **portable** version deploy of grafana and bot are independents. Bot just generate and save local values.yml file. 
 
-2. ### MaaS
-* We maintain infra and provide all necessary things. 
-* Metrics TTL = 30days.
-* 24/7/365 availability.
+1. Monitoring as a Service
+- Available via @p2pvalidator_monitoring_bot
+- We maintain infrastructure and provide all support. No need to host anything.
+- Metrics TTL = 30 days.
+- 24/7/365 availability.
 
+## Components
 
+1. Telegram Bot
+- Grafana instance deploy/destroy
+- Prometheus alerts enable/disable
+- Simple support
+- Administrators area(group chat)
+    - What administrators can do
+    - Enable/Disable accounts
+    - Participate in support conversations with clients. Even can text any client through a bot.
+    - Destroy grafana instance
 
-## Bot 
-Build or deploy grafana instances, subscribe on blockchain events, or just to have positive conversation with our team in rt. All it possible by Telegram bot.
-In current version bot represents:
-* Grafana instance deploy/destroy
-* Prometheus alerts enable/disable
-* Simple support
-* Administrators area(group chat)
+> NOTE Administrators receive into group chat each event client did with the bot (completed action).
+> 
 
-### What administrators can do
-* Enable/Disable accounts
-* Participate in support conversation with client. Even can text to any client thgrough bot.
-* Destroy grafana instance 
-* Subscribtions control for each client. (In future)
-> **NOTE** Administrators receive into group chat each event client did with bot(completed action). 
+2. Metrics
 
+Common exporter:
 
+- `polkadot_staking_currentEra`(chain) Current era
+- `polkadot_staking_eraProgress`(chain) Era progress in percent
+- `polkadot_staking_totalPoints`(chain) Amount of points earned by the whole network
+- `polkadot_staking_eraPoints`(chain, account) Amount of points earned by validator in the current era
+- `polkadot_staking_validatorsChart`(chain, account) Validator's position from best to worst
+- `polkadot_session_currentSession`(chain) Current session index
+- `polkadot_session_sessionProgress`(chain) Session progress in percent
+- `polkadot_session_validators`(chain, account) Is validator active or not
+- `polkadot_session_paraValidators`(chain, account) Paravalidator status
+- `polkadot_pv_pointsMedian`(chain, account) Median ParaValidator points ratio
+- `polkadot_pv_pointsAverage`(chain, account) Average ParaValidator points ratio
+- `polkadot_pv_pointsP95`(chain, account) ParaValidator points ration 95 percentile
+- `polkadot_pv_eraPoints`(chain, account) Amount of points earned by ParaValidator in the current session
+- `polkadot_pv_paraValidatorsChart`(chain, account) ParaValidator's position from best to worst
 
-## Metrics
-#### Common exporter
-* `polkadot_staking_currentEra`(chain) Current era
-* `polkadot_staking_eraProgress`(chain) Era progress in percents
-* `polkadot_staking_totalPoints`(chain) Amount of points earned by whole network
-* `polkadot_staking_eraPoints`(chain,account) Amount of points earned by validator in current era
-* `polkadot_staking_validatorsChart`(chain,account) Validator's position from best to worst
-* `polkadot_session_currentSession`(chain) Current session index
-* `polkadot_session_sessionProgress`(chain) Session progress in percents
-* `polkadot_session_validators`(chain,account) Is validator active or not
-* `polkadot_session_paraValidators`(chain,account) Paravalidator or not
-* `polkadot_pv_pointsMedian`(chain,account) Median ParaValidator points ratio
-* `polkadot_pv_pointsAverage`(chain,account) Average ParaValidator points ratio
-* `polkadot_pv_pointsP95`(chain,account) ParaValidator points ration 95 percentile
-* `polkadot_pv_eraPoints`(chain,account) Amount of points earned by ParaValidator in current session
-* `polkadot_pv_paraValidatorsChart`(chain,account) ParaValidator's position from best to worst
-#### Finality exporter
-* `polkadot_finality_roundProcessed`(chain) Processed round - Rounds processed
-* `polkadot_finality_prevotes`(chain,account) - Amount of success prevoutes by validators
-* `polkadot_finality_precommits`(chain,account) - Amount of success precommits by validators (became to 2/3)
-#### Events exporter
-* `polkadot_events`(chain,module,method) - Occurred on-chain events counter
-* `polkadot_events_by_account`(chain,module,method,account) - Occurred on-chain events with validator account
-    * Event examples `Balances.Deposit`, `Balances.Locked`, `Balances.Reserved`, `Balances.Transfer`, `Balances.Unlocked`, `Balances.Upgraded`, `Balances.Withdraw`, `ImOnline.SomeOffline`, `Proxy.ProxyAdded`, `Staking.Bonded`, `Staking.Chilled`, `Staking.PayoutStarted`, `Staking.Rewarded`, `Staking.SlashReported`, `Staking.Unbonded`, `Staking.ValidatorPrefsSet`, `Staking.Withdrawn`, `TransactionPayment.TransactionFeePaid`, `VoterList.Rebagged`, `VoterList.ScoreUpdated`
-    * `ParasDisputes.DisputeConcluded` - accounts considering candidate is Invalid, but majority conclusion = Valid
+Finality exporter:
 
+- `polkadot_finality_roundProcessed`(chain) Processed round - Rounds processed
+- `polkadot_finality_prevotes`(chain, account) - Amount of success prevotes by validators
+- `polkadot_finality_precommits`(chain, account) - Amount of success precommits by validators (became to 2/3)
 
+Events exporter:
 
-## How to run
-1. Install Docker and Docker Compose from https://docs.docker.com/engine/install/ or any other compose compatible tool and container runtime
+- `polkadot_events`(chain, module, method) - Occurred on-chain events counter
+- `polkadot_events_by_account`(chain, module, method, account) - Occurred on-chain events with validator account
+    - Event examples `Balances.Deposit`, `Balances.Locked`, `Balances.Reserved`, `Balances.Transfer`, `Balances.Unlocked`, `Balances.Upgraded`, `Balances.Withdraw`, `ImOnline.SomeOffline`, `Proxy.ProxyAdded`, `Staking.Bonded`, `Staking.Chilled`, `Staking.PayoutStarted`, `Staking.Rewarded`, `Staking.SlashReported`, `Staking.Unbonded`, `Staking.ValidatorPrefsSet`, `Staking.Withdrawn`, `TransactionPayment.TransactionFeePaid`, `VoterList.Rebagged`, `VoterList.ScoreUpdated`
+    - `ParasDisputes.DisputeConcluded` - accounts considering candidate is Invalid, but majority conclusion = Valid
 
-2. (Optional) Add RPC endpoints to config files `polkadot.env` and `kusama.env` in the following format:
+## How to setup, run, and test
+
+### Events exporters and Grafana dashboard
+
+1. Install Docker and Docker Compose from https://docs.docker.com/engine/install/ or any other compose-compatible tool and container runtime
+2. (Optional) Add RPC endpoints to config files `polkadot.env` and `kusama.env` in the following format:
 
 ```
 WS_ENDPOINT="ws://your-node1:9944"
 WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:9944/"
+
 ```
-3. Configure bot by adding telegram bot api token and group chatId for administrators to `bot.env` Use `@botfather` to create bot. Don't forget to add your bot to administrators group.  
 
-4. Run the project:
-    * via make:
-        * `make` - start both polkadot and kusama exporters
-        * `make polkadot` - start only polkadot part
-        * `make kusama` - start only kusama part
-        * `make clean` - stop and destroy
-    * directly via docker-compose:
-        * `docker-compose -f docker-compose.yml -f polkadot.yml -f kusama.yml up`-  will start exporters for polkadot and kusama
-        * `docker-compose -f docker-compose.yml -f polkadot.yml up` - will start exporters only for polkadot
-        * `docker-compose -f docker-compose.yml -f kusama.yml up` - will start exporters only for kusama
-
-
-
-## How to use and test
-1. Inspect the [dashboard](http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1) (default username and password `admin`, `admin`)
-
-2. Contact with your bot. Command `/start` will be good:)
-
-3. Try to build or destroy grafana instance(actually only `values.yml` generates)
-
-4. Subscribe/Unsubscribe on alerts from prometheus.
-
-
+1. Configure bot by adding telegram bot api token and group chatId for administrators to `bot.env` Use `@botfather` to create bot. Don't forget to add your bot to administrators group.
+2. Run the exporters, grafana and tg bot:
+    - directly via docker-compose:
+        - `docker-compose -f docker-compose.yml -f polkadot.yml -f kusama.yml up`will start exporters for polkadot and kusama
+        - `docker-compose -f docker-compose.yml -f polkadot.yml up` - will start exporters only for polkadot
+        - `docker-compose -f docker-compose.yml -f kusama.yml up` - will start exporters only for kusama
+3. Inspect the [dashboard](http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1) (default username and password `admin`, `admin`)
+4. Inspect the tg bot:
+    1. Contact with your bot. Command `/start` will be good:)
+    2. Try to build or destroy grafana instance(local version generates only `values.yml` which needed to provide to Gra)
+    3. Subscribe/Unsubscribe on alerts from prometheus.
 
 ## Customization
+
 ### Bot
+
 There are two reasonable things which is possible to customize:
-1. [**Message handlers**](./bot/app/handlers/)  
-[Here](./docs/message_handlers.md) is an our explanation. Highly desirable to understand asyncio and aiogram python libraries.
-2. [**Web apps**](./bot/app/web_apps)  
-[Here](./docs/web_apps.md) is an our explanation. Highly desirable to understand asyncio and aiohttp python libraries.
 
-### Prometheus alerting expressions
-Official [doc](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/). [./prometheus/alerts.yml](./prometheus/alerts.yml)
-
-
+1. **[Message handlers](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/bot/app/handlers)**[Here](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/docs/message_handlers.md) is an our explanation. Highly desirable to understand asyncio and aiogram python libraries.
+2. **[Web apps](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/bot/app/web_apps)**[Here](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/docs/web_apps.md) is an our explanation. Highly desirable to understand asyncio and aiohttp python libraries.
 
 ## References
-* https://github.com/polkascan/py-substrate-interface - Python Substrate Interface. Many thanks to `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentation which successfully used in exporters.
-* https://github.com/itering/scale.go - Go implementation of scale codec
-* https://wiki.polkadot.network/ - Polkadot Wiki
-* https://polkadot.js.org/docs/ - Good to know
-* https://docs.aiogram.dev/en/latest/ - AIOgram
-* https://docs.aiohttp.org/en/stable/ - AIOHTTP
+
+- https://github.com/polkascan/py-substrate-interface - Python Substrate Interface. Many thanks to `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentation which successfully used in exporters.
+- https://github.com/itering/scale.go - Go implementation of scale codec
+- https://wiki.polkadot.network/ - Polkadot Wiki
+- https://polkadot.js.org/docs/ - Good to know
+- https://docs.aiogram.dev/en/latest/ - AIOgram
+- https://docs.aiohttp.org/en/stable/ - AIOHTTP
+- [doc](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/).  — Prometheus alerting expressions [./prometheus/alerts.yml](https://github.com/p2p-org/polkadot_monitoring_service/blob/main/prometheus/alerts.yml)
