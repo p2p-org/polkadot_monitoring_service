@@ -1,7 +1,7 @@
 FROM golangci/golangci-lint:v1.53-alpine as linter
 WORKDIR /build/
 COPY . .
-RUN golangci-lint run
+RUN golangci-lint run --timeout=180s
 
 FROM golang:1.20-alpine as builder
 
