@@ -1,0 +1,6 @@
+---
+api_substrate: https://moonbeam-api.polka.p2p.world/api
+chain: moonbeam
+exporter:
+  listen: 0.0.0.0
+  port: 9618

@@ -1,5 +1,4 @@
-pyaml==23.5.9
+numpy
+flask
 requests
-flask==2.3.2
-numpy==1.24.3
-
+pyyaml
