@@ -1,5 +1,5 @@
 from functions import deploy
-from __main__ import dp, db, bot, admin_chat
+from __main__ import dp, db, bot, admin_chat, run_mode
 from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from datetime import datetime, timezone
   
@@ -31,4 +31,7 @@ async def command_build(message: Message) -> None:
     db.update_record(chat_id,'grafana_deploy_time',datetime.now(timezone.utc))
 
     await bot.send_message(admin_chat, "Someone initialized of deploy grafana.\nUsername: @{username} ID: {chat_id}\n\nCommands:\n/delete {chat_id}\n/ban {chat_id}".format(username=username,chat_id=chat_id),reply_markup=ReplyKeyboardRemove())
-    await bot.send_message(chat_id,"Alright 👍\n\nOur robots started cooking your personal dashboard. Usually, this process takes around 5 minutes.\nWe will send all necessary data as soon as dashboard will be ready!\n\nFeel free to contact us /support if any questions.",reply_markup=ReplyKeyboardRemove())
+    if run_mode == "standalone":
+        await bot.send_message(chat_id,"<a href='http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1'>Open dashboard</a>\nDefault username: <b>admin</b> password: <b>admin</b>",reply_markup=ReplyKeyboardRemove())
+    else:
+        await bot.send_message(chat_id,"Alright 👍\n\nOur robots started cooking your personal dashboard. Usually, this process takes around 5 minutes.\nWe will send all necessary data as soon as dashboard will be ready!\n\nFeel free to contact us /support if any questions.",reply_markup=ReplyKeyboardRemove())

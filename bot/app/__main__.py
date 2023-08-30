@@ -22,6 +22,8 @@ if __name__ == "__main__":
     db_host = os.environ['db_host']
     db_port = os.environ['db_port']
 
+    run_mode = os.environ.get('run_mode', 'standalone')
+
     loop = asyncio.get_event_loop()
     storage = MemoryStorage()
     bot = Bot(token=tg_token, loop=loop, parse_mode="HTML")

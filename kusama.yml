@@ -14,6 +14,7 @@ services:
     - ./kusama.env
     networks:
     - exporters
+    restart: on-failure
 
   kusama_finality_exporter:
     build:
@@ -28,6 +29,7 @@ services:
     - ./kusama.env
     networks:
     - exporters
+    restart: on-failure
 
   kusama_events_exporter:
     build:
@@ -36,3 +38,4 @@ services:
     - exporters
     env_file:
     - ./kusama.env
+    restart: on-failure
