@@ -78,7 +78,7 @@ Events exporter:
 
 ## How to setup, run, and test
 
-1. Install Docker and Docker Compose from https://docs.docker.com/engine/install/ or any other compose-compatible tool and container runtime
+1. Install Docker and Docker Compose from https://docs.docker.com/engine/install/	 or any other compose-compatible tool and container runtime
 2. (Optional) Add RPC endpoints to config files `polkadot.env` and `kusama.env` in the following format:
 
 ```
@@ -101,9 +101,9 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 
 ## References
 
-- https://github.com/polkascan/py-substrate-interface - Python Substrate Interface. Many thanks to `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentation which successfully used in exporters.
-- https://github.com/itering/scale.go - Go implementation of scale codec
-- https://wiki.polkadot.network/ - Polkadot Wiki
-- https://polkadot.js.org/docs/ - Good to know
-- https://docs.aiogram.dev/en/latest/ - AIOgram
-- https://docs.aiohttp.org/en/stable/ - AIOHTTP
+- https://github.com/polkascan/py-substrate-interface  - Python Substrate Interface. Many thanks to `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentation which successfully used in exporters.
+- https://github.com/itering/scale.go  - Go implementation of scale codec
+- https://wiki.polkadot.network/  - Polkadot Wiki
+- https://polkadot.js.org/docs/  - Good to know
+- https://docs.aiogram.dev/en/latest/  - AIOgram
+- https://docs.aiohttp.org/en/stable/  - AIOHTTP
