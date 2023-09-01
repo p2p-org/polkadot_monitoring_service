@@ -78,7 +78,7 @@ Events exporter:
 
 ## How to setup, run, and test
 
-1. Install Docker and Docker Compose from https://docs.docker.com/engine/install/  or any other compose-compatible tool and container runtime
+1. Install Docker and Docker Compose from https://docs.docker.com/engine/install/   or any other compose-compatible tool and container runtime
 2. (Optional) Add RPC endpoints to config files `polkadot.env` and `kusama.env` in the following format:
 
 ```
