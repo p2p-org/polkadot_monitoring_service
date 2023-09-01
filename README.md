@@ -102,7 +102,7 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 ## References
 
 - https://github.com/polkascan/py-substrate-interface  - Python Substrate Interface. Many thanks to `Stichting Polkascan (Polkascan Foundation)` for amazing library implimentation which successfully used in exporters.
-- https://github.com/itering/scale.go  - Go implementation of scale codec
+- https://github.com/itering/scale.go  - Go implementation of scale codec
 - https://wiki.polkadot.network/  - Polkadot Wiki
 - https://polkadot.js.org/docs/  - Good to know
 - https://docs.aiogram.dev/en/latest/  - AIOgram
