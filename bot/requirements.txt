@@ -1,5 +1,5 @@
-requests
-psycopg2
+requests==2.*
+psycopg2==2.9.*
 aiogram==2.25.*
-aiohttp
-pyyaml
+aiohttp==3.8.*
+pyyaml==6.*
