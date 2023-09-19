@@ -1,4 +1,14 @@
 from __main__ import dp, db, bot, admin_chat
+from aiogram.types import CallbackQuery,Message,InlineKeyboardButton,InlineKeyboardMarkup
+from aiogram.utils.callback_data import CallbackData
+
+menu_cb = CallbackData('row', 'action', 'chat_id')
+
+
+
+
+
+from __main__ import dp, db, bot, admin_chat
 from callback_query_handlers import promalert,grafana,support
 from aiogram.types import CallbackQuery,Message,InlineKeyboardButton,InlineKeyboardMarkup
 
@@ -23,12 +33,10 @@ async def command_start(message: Message) -> None:
 
     for button in buttons:
         menu.row(button)
-    
+
     if not account_status:
         await bot.send_message(admin_chat, "Username: @{} ID: {}\nHas just PRE-registered.".format(username,chat_id))
         db.add_account(chat_id,username)
-        await bot.send_message(admin_chat, "Username: @{} ID: {}\nHas just PRE-registered.".format(username,chat_id))
-        await message.answer("Hi there 👋\n\n\nWelcome to a validator monitoring bot by P2P.org. Following commands available:\n\n/build - create grafana\n/destroy - delete grafana if exists\n/promalert - activate/deactivate alert notifications\n/support - if you have questions")
-
 
     await message.answer("Hi there 👋\n\n\nWelcome to a validator monitoring bot by P2P.org\n\n\n\n",reply_markup=menu)
+

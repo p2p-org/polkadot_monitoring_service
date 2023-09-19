@@ -7,6 +7,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.utils import executor
 from handlers.setup import setup_message_handler
 from web_apps.setup import setup_web_app
+from forms.setup import setup_message_form
 from aiohttp import web
 from db import DB
 
@@ -32,12 +33,8 @@ if __name__ == "__main__":
     db = DB(db_name,db_user,db_pass,db_host,db_port)
 
     setup_message_handler('start')
-    setup_message_handler('build')
-    setup_message_handler('destroy')
-    setup_message_handler('support')
-    setup_message_handler('ban')
-    setup_message_handler('unban')
-    setup_message_handler('promalert')
+
+    setup_message_form('support')
 
     setup_web_app('ping')
     setup_web_app('prom_alert')
