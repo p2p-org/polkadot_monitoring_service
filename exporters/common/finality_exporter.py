@@ -34,6 +34,10 @@ app = Flask(__name__)
 @app.route("/metrics")
 def metrics():
     chain = os.environ['CHAIN']
+    if len(q_metrics) == 0:
+        response = make_response("", 200)
+        response.mimetype = "text/plain"
+        return response
     metrics = q_metrics[0]
 
     out = ""
@@ -96,6 +100,7 @@ def get_votes(url, substrate_interface):
             if url not in q_outaged:
                 q_outaged.append(url)
             time.sleep(1)
+            substrate_interface.connect_websocket()
             pass
 
 

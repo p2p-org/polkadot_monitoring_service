@@ -13,10 +13,10 @@ async def command_start(message: Message) -> None:
     account_status = db.get_records('account_status','id',chat_id)
 
     if not account_status:
-        await bot.send_message(admin_chat, "Username: @{} ID: {}\nHas just PRE-registered.".format(username,chat_id))
-        await message.answer("Hi there 👋\n\n\nWelcome to a validator monitoring bot by P2P.org\n\n\n\nFeel free to contact us /support if any questions.")
-
         db.add_account(chat_id,username)
+        await bot.send_message(admin_chat, "Username: @{} ID: {}\nHas just PRE-registered.".format(username,chat_id))
+        await message.answer("Hi there 👋\n\n\nWelcome to a validator monitoring bot by P2P.org. Following commands available:\n\n/build - create grafana\n/destroy - delete grafana if exists\n/promalert - activate/deactivate alert notifications\n/support - if you have questions")
+
 
     else:
         await message.answer("According to our database you already registered. 🤷\n\nFeel free to contact us /support if any questions.")

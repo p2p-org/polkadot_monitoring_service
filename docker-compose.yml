@@ -54,6 +54,8 @@ services:
     - "db_port=5432"
     env_file:
     - ./bot.env
+    volumes:
+    - ./bot/app/values.yml:/app/values.yml
     ports:
     - "8080:8080"
     networks:
