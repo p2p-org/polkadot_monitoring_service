@@ -90,7 +90,7 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 1. Configure bot by adding telegram bot api token and group chatId for administrators to `bot.env` Use `@botfather` to create bot. Don't forget to add your bot to administrators group.
 2. Run the exporters, grafana and tg bot:
     - directly via docker-compose:
-        - `docker-compose -f docker-compose.yml -f polkadot.yml -f kusama.yml up`will start exporters for polkadot and kusama
+        - `docker-compose -f docker-compose.yml -f polkadot.yml -f kusama.yml up` - will start exporters for polkadot and kusama
         - `docker-compose -f docker-compose.yml -f polkadot.yml up` - will start exporters only for polkadot
         - `docker-compose -f docker-compose.yml -f kusama.yml up` - will start exporters only for kusama
 3. Inspect the [dashboard](http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1) (default username and password `admin`, `admin`)
