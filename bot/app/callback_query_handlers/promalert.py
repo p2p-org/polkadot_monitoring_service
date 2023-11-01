@@ -1,21 +1,22 @@
-from __main__ import dp, db, bot
-from aiogram.utils.callback_data import CallbackData
+from __main__ import router,dp, db, bot
+#from aiogram.utils.callback_data import CallbackData
 from aiogram.types import CallbackQuery,InlineKeyboardButton,InlineKeyboardMarkup
+from aiogram.filters.callback_data import CallbackData
 
-cb = CallbackData('row', 'action')
+cb = CallbackData()
 
-@dp.callback_query_handler(cb.filter(action='promalert_menu'))
+@router.callback_query(cb.filter('action' == 'promalert_menu'))
 async def menu_prom_cb_handler(query: CallbackQuery):
     chat_id = query['from']['id']
     message_id = query['message']['message_id']
 
-    keyboard = InlineKeyboardMarkup().add(InlineKeyboardButton(text="Set", callback_data=cb.new(action='promalert_set')),
-                                          InlineKeyboardButton(text="Deactivate", callback_data=cb.new(action='promalert_deactivate')))
+    keyboard = InlineKeyboardMarkup().add(InlineKeyboardButton(text="Set", callback_data=cb.new(action='promalert_set').pack()),
+                                          InlineKeyboardButton(text="Deactivate", callback_data=cb.new(action='promalert_deactivate').pack()))
     
     await bot.send_message(chat_id,"You can subscribe or deactivate subsription hete.",reply_markup=keyboard)
     await query.answer(query.id)
 
-@dp.callback_query_handler(cb.filter(action='promalert_set'))
+@router.callback_query(cb.filter('action' == 'promalert_set'))
 async def menu_prom_cb_handler(query: CallbackQuery):
     chat_id = query['from']['id']
     message_id = query['message']['message_id']
@@ -28,7 +29,7 @@ async def menu_prom_cb_handler(query: CallbackQuery):
     
     await query.answer(query.id)
 
-@dp.callback_query_handler(cb.filter(action='promalert_deactivate'))
+@router.callback_query(cb.filter('action' == 'promalert_deactivate'))
 async def menu_prom_cb_handler(query: CallbackQuery):
     chat_id = query['from']['id']
     message_id = query['message']['message_id']

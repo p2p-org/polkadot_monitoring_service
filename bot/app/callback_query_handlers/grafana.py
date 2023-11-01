@@ -1,6 +1,5 @@
 from functions import deploy
 from __main__ import dp, db, bot, admin_chat
-from aiogram.utils.callback_data import CallbackData
 from aiogram.types import CallbackQuery,InlineKeyboardButton,InlineKeyboardMarkup
 from datetime import datetime, timezone
 

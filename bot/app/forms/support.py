@@ -1,13 +1,15 @@
-from __main__ import dp, db, bot, admin_chat
+from __main__ import router,dp, db, bot, admin_chat
 from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
-from callback_query_handlers import admin_buttons
+from aiogram.fsm.context import FSMContext
+from aiogram.filters.state import State, StatesGroup
+#from callback_query_handlers import admin_buttons
+from aiogram import F
+
 
 class Form(StatesGroup):
     support = State()
 
-@dp.message_handler(state=Form.support)
+@router.message(F.state == Form.support)
 async def process_support(message: Message, state: FSMContext) -> None:
     username = message.chat.username
     chat_id = message.from_user.id

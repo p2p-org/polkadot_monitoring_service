@@ -4,7 +4,7 @@ from aiohttp.web_response import json_response
 from aiogram.types import WebAppInfo
 
 async def handler_post(request: Request):
-    date = await request.json()
+    data = await request.json()
 
     try:
         chat_id = data['chat_id']
@@ -21,5 +21,6 @@ async def handler_get(request: Request):
     return web.Response(text="Pong")
 
 def register_app():
+    print(1)
     web_app.add_routes([web.post('/ping', handler_post)])
     web_app.add_routes([web.get('/ping', handler_get)])

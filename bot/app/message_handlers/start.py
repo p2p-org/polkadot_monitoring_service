@@ -1,8 +1,9 @@
-from __main__ import dp, db, bot, admin_chat
-from callback_query_handlers import promalert,grafana,support
+from __main__ import router,dp, db, bot, admin_chat
+from callback_query_handlers import promalert
 from aiogram.types import CallbackQuery,Message,InlineKeyboardButton,InlineKeyboardMarkup
+from aiogram import F
 
-@dp.message_handler(commands=["start"])
+@router.message(F.text == "/start")
 async def command_start(message: Message) -> None:
     if str(message.chat.id).startswith('-'):
         await message.answer("🧑🤝🧑 Group chats are not allowed.\nSorry and have a good day.")
@@ -27,8 +28,7 @@ async def command_start(message: Message) -> None:
     if not account_status:
         await bot.send_message(admin_chat, "Username: @{} ID: {}\nHas just PRE-registered.".format(username,chat_id))
         db.add_account(chat_id,username)
-        await bot.send_message(admin_chat, "Username: @{} ID: {}\nHas just PRE-registered.".format(username,chat_id))
-        await message.answer("Hi there 👋\n\n\nWelcome to a validator monitoring bot by P2P.org. Following commands available:\n\n/build - create grafana\n/destroy - delete grafana if exists\n/promalert - activate/deactivate alert notifications\n/support - if you have questions")
-
-
-    await message.answer("Hi there 👋\n\n\nWelcome to a validator monitoring bot by P2P.org\n\n\n\n",reply_markup=menu)
+        
+        await message.answer("Hi there 👋\n\n\nWelcome to a validator monitoring bot by P2P.org\n\n\n\n",reply_markup=menu)
+    else:
+        await message.answer("Here is main meny",reply_markup=menu)
