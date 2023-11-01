@@ -4,13 +4,13 @@ import os
 import asyncio
 from aiogram import Bot, Dispatcher, Router
 from aiogram.fsm.storage.memory import MemoryStorage
-#from aiogram.utils import executor
 from message_handlers.setup import setup_message_handler
 from web_apps.setup import setup_web_app
 from forms.setup import setup_message_form
 from aiohttp import web
 from db import DB
 import time 
+
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 if __name__ == "__main__":
@@ -22,20 +22,18 @@ if __name__ == "__main__":
     db_pass = os.environ['db_pass']
     db_host = os.environ['db_host']
     db_port = os.environ['db_port']
-
+    
     run_mode = os.environ.get('run_mode', 'standalone')
-
-    #loop = asyncio.get_event_loop()
-    loop = asyncio.get_event_loop()
-    storage = MemoryStorage()
-    #bot = Bot(token=tg_token, loop=loop, parse_mode="HTML")
-    bot = Bot(token=tg_token, parse_mode="HTML")
-    #dp = Dispatcher(bot, storage=storage)
-    dp = Dispatcher(storage=storage)
-    router = Router()
-    dp.include_router(router)
     web_app = web.Application()
     db = DB(db_name,db_user,db_pass,db_host,db_port)
+
+    bot = Bot(token=tg_token, parse_mode="HTML")
+
+    storage = MemoryStorage()
+    dp = Dispatcher(storage=storage)
+    
+    router = Router()
+    dp.include_router(router)
 
     setup_message_handler('start')
 
@@ -44,9 +42,11 @@ if __name__ == "__main__":
     setup_web_app('ping')
     setup_web_app('prom_alert')
 
-    runner = web.AppRunner(web_app)
-    loop.run_until_complete(runner.setup())
-    site = web.TCPSite(runner, port=8080)
+    web_runner = web.AppRunner(web_app)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(web_runner.setup())
+    
+    site = web.TCPSite(web_runner, port=8080)
     loop.run_until_complete(site.start())
-    #executor.start_polling(dp, skip_updates=True)
-#    dp.run_polling(bot)
+
+    loop.run_until_complete(dp.start_polling(bot))
