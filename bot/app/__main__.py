@@ -2,16 +2,16 @@ import logging
 import sys
 import os
 import asyncio
-from aiogram import Bot,Dispatcher,Router
+from aiogram import Bot, Dispatcher, Router
 from aiogram.fsm.storage.memory import MemoryStorage
+#from aiogram.utils import executor
 from message_handlers.setup import setup_message_handler
 from web_apps.setup import setup_web_app
 from forms.setup import setup_message_form
 from callback_data.main import Cb
 from aiohttp import web
-from utils.db import DB
+from db import DB
 import time 
-
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 if __name__ == "__main__":
@@ -25,6 +25,16 @@ if __name__ == "__main__":
     db_port = os.environ['db_port']
     
     run_mode = os.environ.get('run_mode', 'standalone')
+
+    #loop = asyncio.get_event_loop()
+    loop = asyncio.get_event_loop()
+    storage = MemoryStorage()
+    #bot = Bot(token=tg_token, loop=loop, parse_mode="HTML")
+    bot = Bot(token=tg_token, parse_mode="HTML")
+    #dp = Dispatcher(bot, storage=storage)
+    dp = Dispatcher(storage=storage)
+    router = Router()
+    dp.include_router(router)
     web_app = web.Application()
     db = DB(db_name,db_user,db_pass,db_host,db_port)
 
@@ -54,5 +64,5 @@ if __name__ == "__main__":
     
     site = web.TCPSite(web_runner, port=8080)
     loop.run_until_complete(site.start())
-
-    loop.run_until_complete(dp.start_polling(bot))
+    #executor.start_polling(dp, skip_updates=True)
+#    dp.run_polling(bot)

@@ -1,8 +1,9 @@
-from __main__ import dp, db, bot, admin_chat
-from callback_query_handlers import promalert,grafana
+from __main__ import router,dp, db, bot, admin_chat
+from callback_query_handlers import promalert
 from aiogram.types import CallbackQuery,Message,InlineKeyboardButton,InlineKeyboardMarkup
+from aiogram import F
 
-@router.message(F.content_type.in_({'text', 'sticker','photo'}))
+@router.message(F.text == "/start")
 async def command_start(message: Message) -> None:
     if str(message.chat.id).startswith('-'):
         await message.answer("🧑🤝🧑 Group chats are not allowed.\nSorry and have a good day.")
@@ -34,5 +35,7 @@ async def command_start(message: Message) -> None:
     if not account_status:
         await bot.send_message(admin_chat, "Username: @{} ID: {}\nHas just PRE-registered.".format(username,chat_id))
         db.add_account(chat_id,username)
-
-    await message.answer("Hi there 👋\n\n\nWelcome to a validator monitoring bot by P2P.org\n\n\n\n",reply_markup=menu)
+        
+        await message.answer("Hi there 👋\n\n\nWelcome to a validator monitoring bot by P2P.org\n\n\n\n",reply_markup=menu)
+    else:
+        await message.answer("Here is main meny",reply_markup=menu)
