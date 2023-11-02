@@ -1,30 +1,37 @@
 ---
+## Please never rename alert names without corresponding migration in DB
 groups:
-- name: maas rules
+- name: maas-rules
   rules:
-  - alert: Kusama GRANDPA precommits ratio(critical)
-    expr: (polkadot_finality_precommits{chain="kusama"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < 10 and on(instance) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 18
+  - alert: Validator left set
+    expr: polkadot_session_disabledValidators == 1
+    for: 1m
+    labels:
+      severity: "critical"
+    annotations:
+      summary: "{{ $labels.account }}: Validator has been kicked from the active set."
+      description: "Validator {{ $labels.account }} has been kicked from the active set."
+      chain: "{{ $labels.chain }}"
+      account: "{{ $labels.account }}"
+
+  - alert: Low GRANDPA precommits ratio
+    expr: (polkadot_finality_precommits{chain="polkadot"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < 10 and on(node) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
     for: 2m
     labels:
       severity: critical
     annotations:
-      summary: "{{ $labels.account }}: Validator has problem with block finality(precommits) less than 33%"
-      description: "Validator {{ $labels.account }} has problem with block finality(precommits) less than 33%"
+      summary: "{{ $labels.account }}: Validator has problem with block finality(precommits) less than 10%"
+      description: "Validator {{ $labels.account }} has problem with block finality(precommits) less than 10%"
+      chain: "{{ $labels.chain }}"
+      account: "{{ $labels.account }}"
 
-  - alert: Kusama GRANDPA prevotes ratio
-    expr: (polkadot_finality_prevotes{chain="kusama"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < 80 and on(instance) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 18
+  - alert: Low GRANDPA prevotes ratio
+    expr: (polkadot_finality_prevotes{chain="polkadot"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < 80 and on(node) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
     for: 2m
     labels:
       severity: high
     annotations:
       summary: "{{ $labels.account }}: Validator has problem with block finality(prevotes) less than 80%"
       description: "Validator {{ $labels.account }} has problem with block finality(prevotes) less than 80%"
-
-  - alert: Earned points(Total rate)
-    expr: sum by (account)(rate(polkadot_staking_eraPoints[1m])) == 0
-    for: 10m
-    labels:
-      severity: "critical"
-    annotations:
-      summary: "{{ $labels.account }}: not producing blocks for long time."
-      description: "Validator {{ $labels.account }} has a problem with blocks producing."
+      chain: "{{ $labels.chain }}"
+      account: "{{ $labels.account }}"

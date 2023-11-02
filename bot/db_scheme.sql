@@ -23,19 +23,29 @@ SET default_table_access_method = heap;
 --
 -- Name: maas_bot; Type: TABLE; Schema: public; Owner: adm
 --
-CREATE TABLE public.maas_bot (
+CREATE TABLE public.maas_bot_v1 (
     id bigint NOT NULL,
     username text,
     account_status text DEFAULT 'on',
-    grafana_status text DEFAULT 'off',
     promalert_status text DEFAULT 'off',
     support_status text DEFAULT 'off',
-    creation_time timestamp without time zone DEFAULT now(),
-    grafana_deploy_time timestamp without time zone
+    creation_time timestamp without time zone DEFAULT now()
 );
-ALTER TABLE public.maas_bot OWNER TO adm;
-ALTER TABLE ONLY public.maas_bot
-    ADD CONSTRAINT maas_bot_pkey PRIMARY KEY (id);
+ALTER TABLE public.maas_bot_v1 OWNER TO adm;
+ALTER TABLE ONLY public.maas_bot_v1
+    ADD CONSTRAINT maas_bot_v1_pkey PRIMARY KEY (id);
+
+CREATE TABLE public.maas_subscription (
+    id SERIAL PRIMARY KEY,
+    chat_id bigint NOT NULL,
+    subscription_name text NOT NULL,
+    key_name text NOT NULL,
+    key_value text NOT NULL,
+    CONSTRAINT fk_chat_id
+        FOREIGN KEY(chat_id) 
+        REFERENCES public.maas_bot_v1(id)
+);
+ALTER TABLE public.maas_subscription OWNER TO adm;
 --
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: adm
 --

@@ -16,6 +16,7 @@ services:
     networks:
       - exporters
       - monitoring
+      - bot
 
   grafana:
     image: grafana/grafana:latest
@@ -52,15 +53,16 @@ services:
     environment:
     - "db_host=postgres"
     - "db_port=5432"
+    - "prometheus_rules_url=http://prometheus:9090/api/v1/rules"
+    - "prometheus_alert_groups=maas-rules"
     env_file:
     - ./bot.env
-    volumes:
-    - ./bot/app/values.yml:/app/values.yml
     ports:
     - "8080:8080"
     networks:
     - bot
     - postgres
+    - monitoring
 
   postgres:
     container_name: postgres
