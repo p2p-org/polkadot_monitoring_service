@@ -2,13 +2,14 @@ import logging
 import sys
 import os
 import asyncio
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Bot,Dispatcher,Router
 from aiogram.fsm.storage.memory import MemoryStorage
 from message_handlers.setup import setup_message_handler
 from web_apps.setup import setup_web_app
 from forms.setup import setup_message_form
+from callback_data.main import Cb
 from aiohttp import web
-from db import DB
+from utils.db import DB
 import time 
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -35,12 +36,17 @@ if __name__ == "__main__":
     router = Router()
     dp.include_router(router)
 
-    setup_message_handler('start')
+    cb = Cb
 
-    setup_message_form('support')
+    setup_message_handler('start')
+#    setup_message_handler('support')
+
+#    setup_message_form('support')
 
     setup_web_app('ping')
     setup_web_app('prom_alert')
+    
+    from callback_query_handlers import promalert,main_menu,grafana,support
 
     web_runner = web.AppRunner(web_app)
     loop = asyncio.get_event_loop()
