@@ -1,5 +1,4 @@
-from functions import deploy
-from __main__ import dp, db, bot, admin_chat
+from __main__ import router,db,bot,cb,admin_chat
 from aiogram.types import CallbackQuery,InlineKeyboardButton,InlineKeyboardMarkup
 from aiogram import F
 from utils.menu_builder import MenuBuilder

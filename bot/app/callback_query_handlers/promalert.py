@@ -1,42 +1,19 @@
-from __main__ import router,dp, db, bot
-#from aiogram.utils.callback_data import CallbackData
+from __main__ import router,dp,db,bot,cb
 from aiogram.types import CallbackQuery,InlineKeyboardButton,InlineKeyboardMarkup
-from aiogram.filters.callback_data import CallbackData
+from aiogram import F
+from utils.menu_builder import MenuBuilder
 
-cb = CallbackData()
 
-@router.callback_query(cb.filter('action' == 'promalert_menu'))
-async def menu_prom_cb_handler(query: CallbackQuery):
-    chat_id = query['from']['id']
-    message_id = query['message']['message_id']
-
-    keyboard = InlineKeyboardMarkup().add(InlineKeyboardButton(text="Set", callback_data=cb.new(action='promalert_set').pack()),
-                                          InlineKeyboardButton(text="Deactivate", callback_data=cb.new(action='promalert_deactivate').pack()))
-    
-    await bot.send_message(chat_id,"You can subscribe or deactivate subsription hete.",reply_markup=keyboard)
+@router.callback_query(cb.filter(F.dst == 'promalert'))
+async def menu_prom_cb_handler(query: CallbackQuery,callback_data: cb):
     await query.answer(query.id)
+    
+    username = query.message.chat.username
+    chat_id = query.message.chat.id
+    message_id = query.message.message_id
 
-@router.callback_query(cb.filter('action' == 'promalert_set'))
-async def menu_prom_cb_handler(query: CallbackQuery):
-    chat_id = query['from']['id']
-    message_id = query['message']['message_id']
+    menu = MenuBuilder()
+    menu = menu.build(callback_data=cb,preset='promalert',button_back='main_menu')
 
+    await bot.send_message(chat_id,"You can subscribe or deactivate subsription hete.",reply_markup=menu.as_markup())
     await bot.delete_message(chat_id,message_id)
-    
-    db.update_record(chat_id,'promalert_status','on')
-    
-    await bot.send_message(chat_id,"Alright!\n\nFrom now you able to receive predefined alerts.")
-    
-    await query.answer(query.id)
-
-@router.callback_query(cb.filter('action' == 'promalert_deactivate'))
-async def menu_prom_cb_handler(query: CallbackQuery):
-    chat_id = query['from']['id']
-    message_id = query['message']['message_id']
-
-    await bot.delete_message(chat_id,message_id)
-
-    db.update_record(chat_id,'promalert_status','off')
-
-    await bot.send_message(chat_id,"Your subscriprion has been deactivated.")
-    await query.answer(query.id) 
