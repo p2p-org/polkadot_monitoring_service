@@ -1,10 +1,10 @@
-import psycopg2
+import psycopg
 import logging
 import time
 import traceback
 from _thread import interrupt_main
-from psycopg2 import Error
-from psycopg2.sql import Identifier, Literal, SQL
+from psycopg import Error
+from psycopg.sql import Identifier, Literal, SQL
 
 class DB():
     def __init__(self, db_name, db_user, db_pass, db_host, db_port):
@@ -20,14 +20,14 @@ class DB():
     def connect(self,retry_counter=0,sleep=5,attempts=5):
         if not self._connection:
             try:
-                self._connection = psycopg2.connect(database=self.db_name,
+                self._connection = psycopg.connect(dbname=self.db_name,
                                                     user=self.db_user,
                                                     password=self.db_pass,
                                                     host=self.db_host,
                                                     port=self.db_port,
                                                     connect_timeout=3)
                 return self._connection
-            except (psycopg2.DatabaseError, psycopg2.OperationalError, psycopg2.InterfaceError) as error:
+            except (psycopg.DatabaseError, psycopg.OperationalError, psycopg.InterfaceError) as error:
                 if retry_counter >= attempts:
                     logging.error('Unable connect to DB')
                     traceback.print_exc()
@@ -37,7 +37,7 @@ class DB():
                     logging.warning('Could not conect to DB retry ' + str(retry_counter))
                     time.sleep(sleep)
                     self.connect(retry_counter,sleep,attempts)
-            except (Exception, psycopg2.Error) as error:
+            except (Exception, psycopg.Error) as error:
                 logging.error(error)
                 traceback.print_exc()
                 interrupt_main()
@@ -60,10 +60,10 @@ class DB():
         
             try:
                 self._cursor.execute(query)
-            except (psycopg2.errors.UniqueViolation, psycopg2.errors.UndefinedColumn, psycopg2.errors.InFailedSqlTransaction) as e:
+            except (psycopg.errors.UniqueViolation, psycopg.errors.UndefinedColumn, psycopg.errors.InFailedSqlTransaction) as e:
                 logging.error(e)
                 self._connection.rollback()
-            except psycopg2.OperationalError:
+            except psycopg.OperationalError:
                 self.reset()
 
             if self._cursor.description:

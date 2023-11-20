@@ -7,8 +7,7 @@ def deploy(chat_id,values_file):
     if not next((app for app in maas_apps["applications"] if int(app) == int(chat_id)), None):
         maas_apps["applications"].append(chat_id)
     else:
-        # Aborting attempt to copy existing app.
-        return
+        raise Exception("Aborting attempt to copy existing app. Chat ID: {}".format(chat_id))
 
     with open(values_file, "w") as f:
         yaml.dump(maas_apps, f)

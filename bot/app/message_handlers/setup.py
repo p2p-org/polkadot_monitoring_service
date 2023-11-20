@@ -5,4 +5,4 @@ __all__ = [
 ]
 
 def setup_message_handler(handler):
-    imported = getattr(__import__('handlers',fromlist=[handler]), handler)
+    imported = getattr(__import__('message_handlers',fromlist=[handler]), handler)
