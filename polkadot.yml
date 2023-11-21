@@ -15,7 +15,7 @@ services:
     networks:
     - exporters
     restart: on-failure
-  
+
   polkadot_finality_exporter:
     build:
       context: ./exporters/common
@@ -30,7 +30,7 @@ services:
     networks:
     - exporters
     restart: on-failure
-  
+
   polkadot_events_exporter:
     build:
       context: ./exporters/events

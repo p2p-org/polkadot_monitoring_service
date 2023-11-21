@@ -7,10 +7,10 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from message_handlers.setup import setup_message_handler
 from web_apps.setup import setup_web_app
 from forms.setup import setup_message_form
-from callback_data.main import Cb
+from callback_data.main import CbData
 from aiohttp import web
 from utils.db import DB
-import time 
+from utils import subscriptions
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
@@ -24,29 +24,34 @@ if __name__ == "__main__":
     db_host = os.environ['db_host']
     db_port = os.environ['db_port']
     
-    run_mode = os.environ.get('run_mode', 'standalone')
+    grafana_url = os.environ.get('grafana_url', 'http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1')
+    prometheus_rules_url = os.environ.get('prometheus_rules_url', 'http://localhost:9090/api/v1/rules')
+    prometheus_alert_groups = os.environ.get('prometheus_alert_groups', [])
+    if isinstance(prometheus_alert_groups, str):
+        prometheus_alert_groups = prometheus_alert_groups.split(',')
+
     web_app = web.Application()
     db = DB(db_name,db_user,db_pass,db_host,db_port)
-
+    subs = subscriptions.Subscriptions(db, prometheus_rules_url, prometheus_alert_groups)
     bot = Bot(token=tg_token, parse_mode="HTML")
 
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
-    
+
     router = Router()
     dp.include_router(router)
 
-    cb = Cb
+    cb = CbData
 
     setup_message_handler('start')
-#    setup_message_handler('support')
 
-#    setup_message_form('support')
+    setup_message_form('sub_filter')
+    setup_message_form('support')
 
     setup_web_app('ping')
     setup_web_app('prom_alert')
     
-    from callback_query_handlers import promalert,main_menu,grafana,support
+    from callback_query_handlers import promalert,main_menu,support,subscriptions
 
     web_runner = web.AppRunner(web_app)
     loop = asyncio.get_event_loop()

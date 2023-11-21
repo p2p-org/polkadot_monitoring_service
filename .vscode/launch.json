@@ -5,14 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "bot",
+            "name": "Bot",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/bot/app/__main__.py",
             "cwd": "${workspaceFolder}/bot/app/",
             "console": "integratedTerminal",
-            "envFile": "${workspaceFolder}/bot.env",
-            "justMyCode": true
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/bot.env"
         }
     ]
 }
