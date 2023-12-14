@@ -1,9 +1,6 @@
 ---
-api_substrate: http://127.0.0.1:3000/api
+api_substrate: https://acala-api.polka.p2p.world/api
 chain: acala
 exporter:
   listen: 0.0.0.0
   port: 9618
-validators:
-  scaleway-acala-collator1:
-    account: 21nrT9Jf6KmboAEJnyE4As3H18pZ8xbJYkyWpCEJEshPXGzS

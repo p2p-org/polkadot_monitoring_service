@@ -109,27 +109,22 @@ def main():
             last_block = int(api_request(method = 'api.query.system.number'),16)
 
             if last_block != block:
-                result = {'validators':validators,'common':{}}
-                active_validators = api_request(method = 'api.query.session.validators')
+                validators = api_request(method = 'api.query.session.validators')
+                
+                active_validators  = {k:points for k in validators}
                 current_session = int(api_request(method = 'api.query.session.currentIndex'),16)
                 disabled_validators = api_request(method = 'api.query.session.disabledValidators')
-
+                result = {'validators':active_validators,'common':{}}
                 result['common'] = {}
                 result['common']['active_validators_count'] = len(active_validators)
                 result['common']['current_session'] = current_session
-
                 for addr,params in result['validators'].items():
-                    if addr in active_validators:
-                        validator_idx = active_validators.index(addr)
-                        points = int(api_request(method = 'api.query.collatorSelection.sessionPoints', args = addr),16)
-                        params['points'] = points
-                        params['is_active'] = 1
-                        params['is_disabled'] = 0
-                    else:
-                        validator_idx = None
-                        params['is_active'] = 0
-                        params['points'] = 0
-                
+                    validator_idx = active_validators.index(addr)
+                    points = int(api_request(method = 'api.query.collatorSelection.sessionPoints', args = addr),16)
+                    params['points'] = points
+                    params['is_active'] = 1
+                    params['is_disabled'] = 0
+                                    
                     if validator_idx in disabled_validators:
                         params['is_disabled'] = 1
                         params['is_active'] = 0
@@ -150,11 +145,6 @@ def main():
 if __name__ == '__main__':
     endpoint_listen = get_config('exporter')['listen']
     endpoint_port = get_config('exporter')['port']
-
-    validators = {}
-
-    for k,v in get_config('validators').items():
-        validators[v['account']] = {'node':k}
 
     q_metrics = deque([])
 
