@@ -24,7 +24,7 @@ def metrics():
         out += '# TYPE acala_session_common Common metrics counter\n'
 
         for k,v in metrics['common'].items():
-            out += 'acala_session_common{name="%s",chain="%s"} %s\n' % (k,chain,v)
+            out += 'acala_session_common{name="%s",chain="%s"} %s\n' % (k,chain)
     except KeyError:
         pass
 
@@ -33,16 +33,7 @@ def metrics():
         out += '# TYPE acala_session_active_validators Active validators counter\n'
 
         for k,v in metrics['validators'].items():
-            out += 'acala_session_active_validators{node="%s",chain="%s",account_addr="%s"} %s\n' % (v['node'],chain,k,v['is_active'])
-    except KeyError:
-        pass
-
-    try:
-        out += '# HELP acala_session_disabled_validators Disabled validators\n'
-        out += '# TYPE acala_session_disabled_validators Disabled validators counter\n'
-
-        for k,v in metrics['validators'].items():
-            out += 'acala_session_disabled_validators{node="%s",chain="%s",account_addr="%s"} %s\n' % (v['node'],chain,k,v['is_disabled'])
+            out += 'acala_session_active_validators{node="%s",chain="%s",account_addr="%s"} %s\n' % (chain,k)
     except KeyError:
         pass
 
@@ -51,7 +42,7 @@ def metrics():
         out += '# TYPE acala_rewards_validator Points earned counter\n'
 
         for k,v in metrics['validators'].items():
-            out += 'acala_rewards_validator{node="%s",chain="%s",account_addr="%s"} %s\n' % (v['node'],chain,k,v['points'])
+            out += 'acala_rewards_validator{node="%s",chain="%s",account_addr="%s"} %s\n' % (chain,k)
     except KeyError:
         pass
 
@@ -110,25 +101,19 @@ def main():
 
             if last_block != block:
                 validators = api_request(method = 'api.query.session.validators')
-                
-                active_validators  = {k:points for k in validators}
                 current_session = int(api_request(method = 'api.query.session.currentIndex'),16)
                 disabled_validators = api_request(method = 'api.query.session.disabledValidators')
-                result = {'validators':active_validators,'common':{}}
+                result = {'validators':{},'common':{}}
                 result['common'] = {}
-                result['common']['active_validators_count'] = len(active_validators)
+                result['common']['active_validators_count'] = len(validators)
                 result['common']['current_session'] = current_session
-                for addr,params in result['validators'].items():
-                    validator_idx = active_validators.index(addr)
+                for addr in validators: 
                     points = int(api_request(method = 'api.query.collatorSelection.sessionPoints', args = addr),16)
-                    params['points'] = points
-                    params['is_active'] = 1
-                    params['is_disabled'] = 0
+                    validator_points  = {k:points for k in validators if k == addr}
+                    result['validators'].update(validator_points)
+              
                                     
-                    if validator_idx in disabled_validators:
-                        params['is_disabled'] = 1
-                        params['is_active'] = 0
-
+                print (result)    
                 q_metrics.clear()
                 q_metrics.append(result)
 
