@@ -24,7 +24,7 @@ def metrics():
         out += '# TYPE acala_session_common Common metrics counter\n'
 
         for k,v in metrics['common'].items():
-            out += 'acala_session_common{name="%s",chain="%s"} %s\n' % (k,chain)
+            out += 'acala_session_common{name="%s",chain="%s"} %s\n' % (k,chain,v)
     except KeyError:
         pass
 
@@ -32,8 +32,8 @@ def metrics():
         out += '# HELP acala_session_active_validators Active validators\n'
         out += '# TYPE acala_session_active_validators Active validators counter\n'
 
-        for k,v in metrics['validators'].items():
-            out += 'acala_session_active_validators{node="%s",chain="%s",account_addr="%s"} %s\n' % (chain,k)
+        for k in metrics['validators'].items():
+            out += 'acala_session_active_validators{chain="%s"} %s\n' % (chain,k)
     except KeyError:
         pass
 
@@ -41,8 +41,9 @@ def metrics():
         out += '# HELP acala_rewards_validator Points earned\n'
         out += '# TYPE acala_rewards_validator Points earned counter\n'
 
-        for k,v in metrics['validators'].items():
-            out += 'acala_rewards_validator{node="%s",chain="%s",account_addr="%s"} %s\n' % (chain,k)
+        for k in metrics:
+            print (k[validators])
+            out += 'acala_rewards_validator{chain="%s" } %s\n' % (chain,k)
     except KeyError:
         pass
 
@@ -111,12 +112,9 @@ def main():
                     points = int(api_request(method = 'api.query.collatorSelection.sessionPoints', args = addr),16)
                     validator_points  = {k:points for k in validators if k == addr}
                     result['validators'].update(validator_points)
-              
-                                    
-                print (result)    
+                             
                 q_metrics.clear()
                 q_metrics.append(result)
-
             session = current_session
             block = last_block
 
