@@ -110,8 +110,8 @@ def main():
 
             if last_block != block:
                 validators = api_request(method = 'api.query.session.validators')
-                
-                active_validators  = {k:points for k in validators}
+                point = 0
+                active_validators  = {k:point for k in validators}
                 current_session = int(api_request(method = 'api.query.session.currentIndex'),16)
                 disabled_validators = api_request(method = 'api.query.session.disabledValidators')
                 result = {'validators':active_validators,'common':{}}
@@ -119,15 +119,15 @@ def main():
                 result['common']['active_validators_count'] = len(active_validators)
                 result['common']['current_session'] = current_session
                 for addr,params in result['validators'].items():
-                    validator_idx = active_validators.index(addr)
+                    #validator_idx = active_validators.index(addr)
                     points = int(api_request(method = 'api.query.collatorSelection.sessionPoints', args = addr),16)
-                    params['points'] = points
+                    print (points)
                     params['is_active'] = 1
                     params['is_disabled'] = 0
                                     
-                    if validator_idx in disabled_validators:
-                        params['is_disabled'] = 1
-                        params['is_active'] = 0
+                   # if validator_idx in disabled_validators:
+                   #     params['is_disabled'] = 1
+                   #     params['is_active'] = 0
 
                 q_metrics.clear()
                 q_metrics.append(result)
