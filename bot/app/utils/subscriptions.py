@@ -1,6 +1,6 @@
-
 from utils.db import DB
-import asyncio, aiohttp
+import asyncio
+import aiohttp
 
 class Alert():
     def __init__(self, prom_json: dict) -> None:
