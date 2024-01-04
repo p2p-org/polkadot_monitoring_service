@@ -100,13 +100,14 @@ async def handle_support_off(query: CallbackQuery, callback_data: CbData):
 @router.callback_query(CbData.filter(F.dst == 'toggle_ban'))
 async def handle_toggle_ban(query: CallbackQuery, callback_data: CbData):
     chat_id = int(callback_data.data)
+    
     if db.get_records('account_status', 'id', chat_id) == 'off':
         db.update_record(chat_id, 'account_status', 'on')
-        await bot.send_message(chat_id, 'Your account has been activated🤷\nHave a good day.')
+        await bot.send_message(chat_id, 'Your account has been activated🎉\n')
         await query.answer('Unbanned')
     else:
         db.update_record(chat_id, 'account_status', 'off')
         db.update_record(chat_id, 'support_status', 'off')
-        await bot.send_message(chat_id, 'Your account has been disabled 🤷\nSorry and have a good day.')
+        await bot.send_message(chat_id, 'Your account has been deactivated by our team 🤷\n')
         await query.answer('Banned')
     

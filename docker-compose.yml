@@ -36,12 +36,11 @@ services:
 
   alertmanager:
     image: prom/alertmanager:latest
-    restart: unless-stopped
     ports:
-      - 9093:9093
+    - 9093:9093
     volumes:
-      - ./alertmanager:/config
-      - alertmanager-data:/data
+    - ./alertmanager:/config
+    - alertmanager-data:/data
     command: --config.file=/config/alertmanager.yml 
     networks:
     - monitoring
@@ -50,11 +49,6 @@ services:
   bot:
     build:
       context: ./bot
-    environment:
-    - "db_host=postgres"
-    - "db_port=5432"
-    - "prometheus_rules_url=http://prometheus:9090/api/v1/rules"
-    - "prometheus_alert_groups=maas-rules"
     env_file:
     - ./bot.env
     ports:
@@ -65,7 +59,6 @@ services:
     - monitoring
 
   postgres:
-    container_name: postgres
     image: postgres:13
     environment:
       POSTGRES_USER: adm
@@ -79,8 +72,16 @@ services:
     networks:
     - postgres
 
+  redis:
+    image: redis:latest
+    command: ["redis-server"]
+    ports:
+    - "6379:6379"
+    networks:
+    - bot
+    - monitoring
+
   pgadmin:
-    container_name: pgadmin
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
@@ -88,11 +89,18 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
        - pgadmin:/var/lib/pgadmin
-
     ports:
     - "5050:80"
     networks:
     - postgres
+
+  validators_cache:
+    build:
+      context: ./validators_cache
+    networks:
+    - redis
+    - monitoring
+    restart: unless-stopped
 
 volumes:
     postgres: {}
@@ -106,3 +114,4 @@ networks:
   exporters: 
   monitoring:
   postgres:
+  redis:
