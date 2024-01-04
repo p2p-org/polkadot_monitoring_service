@@ -1,0 +1,17 @@
+version: '3.4'
+
+services:
+  moonriver_exporter:
+    build:
+      context: ./exporters/moonbeam
+      args:
+        exporter: "moonriver_exporter"
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150" 
+    - "CHAIN=moonriver"
+    env_file:
+    - ./moonriver.env
+    networks:
+    - exporters
+
