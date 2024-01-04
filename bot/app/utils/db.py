@@ -8,7 +8,6 @@ from psycopg.sql import Identifier, Literal, SQL
 
 
 class DB():
-
     table_bot             = Identifier('maas_bot_v1')
     table_subscription    = Identifier('maas_subscription')
     col_id                = Identifier('id')

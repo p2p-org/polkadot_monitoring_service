@@ -3,3 +3,4 @@ psycopg
 aiogram
 aiohttp
 pyyaml
+redis
