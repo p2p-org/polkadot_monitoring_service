@@ -5,7 +5,8 @@ groups:
     expr: sum by (account)(rate(polkadot_staking_eraPoints{chain = "{{ chain }}"}[1m])) == 0
     for: 10m
     labels:
-      severity: "critical"
+      alert_id: "{{ alert_id }}"
+      chat_id: "{{ chat_id }}"
     annotations:
       summary: "{{ $labels.chain }}: No one did not produce blocks for long time."
       description: "{{ $labels.chain }} has a problem with blocks producing."
@@ -18,7 +19,8 @@ groups:
     expr: polkadot_session_disabledValidators{account ~= "{{ accounts_list }}"} == 1
     for: 1m
     labels:
-      severity: "critical"
+      alert_id: "{{ alert_id }}"
+      chat_id: "{{ chat_id }}"
     annotations:
       summary: "{{ $labels.chain }}: Validator has been kicked from the active set."
       description: "Validator {{ $labels.account }} has been kicked from the active set."
@@ -29,7 +31,8 @@ groups:
     expr: (polkadot_finality_precommits{account ~= "{{ accounts_list }}"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < {{ treshold }} and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
     for: 2m
     labels:
-      severity: critical
+      alert_id: "{{ alert_id }}"
+      chat_id: "{{ chat_id }}"
     annotations:
       summary: "{{ $labels.chain }}: Validator has problem with block finality(precommits) less than {{ threshold }}%"
       description: "Validator {{ $labels.account }} has problem with block finality(precommits) less than {{ treshold }}%"
@@ -40,7 +43,8 @@ groups:
     expr: (polkadot_finality_prevotes{account ~= "{{ accounts_list }}"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < {{ treshold }} and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
     for: 2m
     labels:
-      severity: high
+      alert_id: "{{ alert_id }}"
+      chat_id: "{{ chat_id }}"
     annotations:
       summary: "{{ $labels.chain }}: Validator has problem with block finality(prevotes) less than {{ threshold }}%"
       description: "Validator {{ $labels.account }} has problem with block finality(prevotes) less than {{ threshold }}%"
@@ -51,7 +55,8 @@ groups:
     expr: polkadot_staking_eraPoints{account ~= "{{ accounts_list "}} < {{ treshold }} and on(chain) polkadot_session_sessionProgress > 75 and on(account) polkadot_session_paraValidators == 1
     for: 1m
     labels:
-      severity: high
+      alert_id: "{{ alert_id }}"
+      chat_id: "{{ chat_id }}"
     annotations:
       summary: "{{ $labels.chain }}: ParaValidator {{ labels.account }} earns too litle points."
       description: "ParaValidator {{ labels.account }} has a problem with blocks producing."
