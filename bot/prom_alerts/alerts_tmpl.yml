@@ -27,7 +27,7 @@ groups:
       description: "Validator {{ $labels.account }} has been kicked from the active set."
       chain: "{{ $labels.chain }}"
       account: "{{ $labels.account }}"
-      bot_description: "Will shout if selected validator been kiccked from active set\n\nmetric: polkadot_session_disabledValidators\nlabel: Validator SS58 address(possible to pass from four first symbols)"
+      bot_description: "Will shout if selected validator been kicked from active set\n\nmetric: polkadot_session_disabledValidators\nlabel: Validator SS58 address(possible to pass from four first symbols)"
 
   - alert: Low GRANDPA precommits ratio
     expr: (polkadot_finality_precommits{account ~= "{{ accounts_list }}"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < {{ treshold }} and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
