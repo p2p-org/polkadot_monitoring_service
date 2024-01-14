@@ -1,10 +1,7 @@
 ---
-api_substrate: https://shiden-api.polka.p2p.world/api
-api_registry: https://registry-para-api.polka.p2p.world/api
-chain: shiden
+chain: astar
+ws_endpoint: wss://rpc.astar.network
 exporter:
   listen: 0.0.0.0
   port: 9618
-validators:
-  scaleway-shiden-collator1:
-    account: 'ZPsVRDiDTsWr9wENxE5iyBFCd2ySckF9mn8PtGSevnKjMwU'
+

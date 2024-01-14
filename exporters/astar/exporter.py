@@ -6,10 +6,15 @@ import yaml
 import time
 import json
 import logging
-from numpy import median, average, percentile
-from decimal import *
+import operator
+import traceback
 from collections import deque
 from flask import Flask, request, make_response
+from functions import SUBSTRATE_INTERFACE, get_config, get_era_points, get_chain_info 
+from _thread import interrupt_main
+from numpy import median, average, percentile
+from decimal import *
+
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %I:%M:%S')
 app = Flask(__name__)
@@ -103,32 +108,6 @@ def metrics():
 
     return response
 
-def api_request(method = None,args = None):
-    url = get_config('api_substrate')
-
-    if isinstance(args, list):
-        for i in range(len(args)):
-            if isinstance(args[i], str):
-                args[i] = '"' + args[i] + '"'
-    elif isinstance(args, str):
-        args = '"' + args + '"'
-    elif not args:
-        args = ""
-
-    data = {'method': method,
-            'args': args}
-
-    try:
-        r = requests.post(url, json=data)
-    except (ConnectionRefusedError,requests.exceptions.ConnectionError) as e:
-        logging.critical(e)
-        return None
-
-    if r.status_code == 200:
-        return r.json()['result']
-    else:
-        logging.critical('Request to ' + url + ' finished with code ' + str(r.status_code))
-        return None
 
 def get_config(part):
     with open('./config.yaml') as config_file:
@@ -138,8 +117,8 @@ def get_config(part):
 
 def get_block_count(addr):
     try:
-        authored_block = int(api_request(method = 'api.query.collatorSelection.lastAuthoredBlock', args = addr),16)
-        
+        authored_block = substrate_interface.request('CollatorSelection','LastAuthoredBlock', ['addr']).value
+       
         for i in q_collators:
             idx = q_collators.index(i)
             if addr in i.keys():
@@ -155,9 +134,9 @@ def main():
     session = 0
 
     while True:
-        try:
-            current_era = int(api_request(method = 'api.query.dappsStaking.currentEra')[2:],16)
-            current_session = int(api_request(method = 'api.query.session.currentIndex')[2:],16)
+        try: 
+            current_era = substrate_interface.request('DappsStaking','CurrentEra').value
+            current_session = substrate_interface.request('Session','CurrentIndex').value
             
             if era != current_era:
                 logging.info('New era ' + str(current_era) + ' has just begun')
@@ -165,9 +144,9 @@ def main():
             if session != current_session:
                 processed = []
                 q_collators.clear()
-                active_collators = api_request(method = 'api.query.session.validators')
-                disabled_collators = api_request(method = 'api.query.session.disabledValidators')
-                
+                active_collators = substrate_interface.request('Session','Validators').value
+                disabled_collators = substrate_interface.request('Session','DisabledValidators').value
+                            
                 for addr in active_collators:
                     if addr not in collators.keys() and addr not in processed:
                         q_collators.append({addr:[]})
@@ -189,7 +168,7 @@ def main():
                 result['common']['session_blocks'] = 0
                 logging.info('New session ' + str(current_session) + ' has just begun')
 
-            last_block = int(api_request(method = 'api.query.system.number'),16)
+            last_block = substrate_interface.request('System','Number').value
        
             if last_block != block:
                 logging.info('Processing block ' + str(last_block))
@@ -199,9 +178,8 @@ def main():
                    for addr,params in result['collators'].items():
 
                         if addr in active_collators:
-                           authored_block = api_request(method = 'api.query.collatorSelection.lastAuthoredBlock', args = addr)
-                           authored_block = int(authored_block, 16)
-         
+                           authored_block = substrate_interface.request('CollatorSelection','LastAuthoredBlock', ['addr']).value                           
+          
                         if 'last_authored_block' not in params:
                            params['last_authored_block'] = authored_block
 
@@ -247,11 +225,13 @@ def main():
 if __name__ == '__main__':
     endpoint_listen = get_config('exporter')['listen']
     endpoint_port = get_config('exporter')['port']
-  
+    ws_endpoint = get_config('ws_endpoint')
+    chain = get_config('chain')
+    substrate_interface = SUBSTRATE_INTERFACE(ws_endpoint,chain)
+ 
     collators = {}
 
-    for k,v in get_config('validators').items():
-        collators[v['account']] = {'node':k}
+    
 
     q_metrics = deque([])
     q_collators = deque([])
