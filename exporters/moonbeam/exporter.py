@@ -104,7 +104,7 @@ def get_round_progress(chain):
                 }
 
     round_length = constants[chain]['round_length']
-    round_first_block = substrate_interface.request('ParachainStaking','Round', ['first']).value 
+    round_first_block = substrate_interface.request('ParachainStaking','Round').value['first'] 
     current_block = substrate_interface.request('System','Number').value
     round_progress = (int(current_block) - int(round_first_block)) / round_length * 100
 
@@ -122,7 +122,7 @@ def main():
 
     while True:
         try:
-            current_rnd = substrate_interface.request('ParachainStaking','Round').value.current
+            current_rnd = substrate_interface.request('ParachainStaking','Round').value['current']
             if current_rnd != rnd:
                 rnd_blocks_count = 0
                 active_collators = substrate_interface.request('ParachainStaking','SelectedCandidates').value
