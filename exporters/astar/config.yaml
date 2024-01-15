@@ -1,0 +1,6 @@
+---
+chain: astar
+ws_endpoint: wss://rpc.astar.network
+exporter:
+  listen: 0.0.0.0
+  port: 9618

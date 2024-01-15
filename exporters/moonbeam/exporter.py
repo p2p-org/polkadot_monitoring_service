@@ -6,10 +6,15 @@ import yaml
 import time
 import json
 import logging
-from numpy import median, average, percentile
-from decimal import *
+import operator
+import traceback
 from collections import deque
 from flask import Flask, request, make_response
+from functions import SUBSTRATE_INTERFACE, get_config, get_era_points, get_chain_info 
+from _thread import interrupt_main
+from numpy import median, average, percentile
+from decimal import *
+
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %I:%M:%S')
 app = Flask(__name__)
@@ -91,32 +96,6 @@ def metrics():
 
     return response
 
-def api_request(method = None,args = None):
-    url = get_config('api_substrate')
-
-    if isinstance(args, list):
-        for i in range(len(args)):
-            if isinstance(args[i], str):
-                args[i] = '"' + args[i] + '"'
-    elif isinstance(args, str):
-        args = '"' + args + '"'
-    elif not args:
-        args = ""
-
-    data = {'method': method,
-            'args': args}
-
-    try:
-        r = requests.post(url, json=data)
-    except (ConnectionRefusedError,requests.exceptions.ConnectionError) as e:
-        logging.critical(e)
-        return None
-
-    if r.status_code == 200:
-        return r.json()['result']
-    else:
-        logging.critical('Request to ' + url + ' finished with code ' + str(r.status_code))
-        return None
 
 def get_round_progress(chain):
     constants = {
@@ -125,8 +104,8 @@ def get_round_progress(chain):
                 }
 
     round_length = constants[chain]['round_length']
-    round_first_block = api_request(method = 'api.query.parachainStaking.round')['first']
-    current_block = int(api_request(method = 'api.query.system.number'),16)
+    round_first_block = substrate_interface.request('ParachainStaking','Round', ['first']).value 
+    current_block = substrate_interface.request('System','Number').value
     round_progress = (int(current_block) - int(round_first_block)) / round_length * 100
 
     return round_progress
@@ -143,11 +122,10 @@ def main():
 
     while True:
         try:
-            current_rnd = api_request(method = 'api.query.parachainStaking.round')['current']
+            current_rnd = substrate_interface.request('ParachainStaking','Round').value.current
             if current_rnd != rnd:
                 rnd_blocks_count = 0
-                
-                active_collators = api_request(method = 'api.query.parachainStaking.selectedCandidates') 
+                active_collators = substrate_interface.request('ParachainStaking','SelectedCandidates').value
                 common = {}
                 common['active_collators'] = len(active_collators)
                 common['current_round'] = current_rnd
@@ -157,13 +135,12 @@ def main():
                 result = {'collators':all_collators, 'common':common}
                 logging.info('New round ' + str(current_rnd) + ' has just begun')
                 
-            last_block = int(api_request(method = 'api.query.system.number'),16)
+            last_block = substrate_interface.request('System','Number').value
             
             if  last_block != block:
                 logging.info('Processing block ' + str(last_block))
-               
-                block_author = api_request(method = 'api.query.authorInherent.author')
-                                    
+                block_author = substrate_interface.request('AuthorInherent','Author').value
+                                                   
                 for addr,params in result['collators'].items():
                                                          
                     if block_author == addr:
@@ -195,11 +172,12 @@ def main():
 if __name__ == '__main__':
     endpoint_listen = get_config('exporter')['listen']
     endpoint_port = get_config('exporter')['port']
+    ws_endpoint = get_config('ws_endpoint')
+    chain = get_config('chain')
+    substrate_interface = SUBSTRATE_INTERFACE(ws_endpoint,chain)
        
     collators = {}
 
-   # for k,v in get_config('validators').items():
-   #     collators[v['account']] = {'node':k}
 
     q_metrics = deque([])
 
