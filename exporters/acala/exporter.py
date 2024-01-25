@@ -58,11 +58,6 @@ def metrics():
 
     return response
 
-def get_config(part):
-    with open('./config.yaml') as config_file:
-        data = yaml.load(config_file, Loader=yaml.FullLoader)
-
-    return data[part]
 
 def main():
     block = 0
@@ -97,10 +92,13 @@ def main():
         time.sleep(3)
 
 if __name__ == '__main__':
-    endpoint_listen = get_config('exporter')['listen']
-    endpoint_port = get_config('exporter')['port']
-    ws_endpoint = get_config('ws_endpoint')
-    chain = get_config('chain')
+
+    endpoint_listen = os.environ['LISTEN']
+    endpoint_port = os.environ['PORT']
+    ws_endpoint = os.environ['WS_ENDPOINT']
+    chain = os.environ['CHAIN']
+
+
     substrate_interface = SUBSTRATE_INTERFACE(ws_endpoint,chain)
 
     q_metrics = deque([])
