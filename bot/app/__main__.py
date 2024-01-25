@@ -3,13 +3,11 @@ import sys
 import os
 import asyncio
 from aiohttp import web
-from aiogram import Bot,Dispatcher,Router
+from aiogram import Bot, Dispatcher, Router
 from aiogram.fsm.storage.memory import MemoryStorage
 from message_handlers.setup import setup_message_handler
 from web_apps.setup import setup_web_app
 from forms.setup import setup_message_form
-from utils import subscriptions
-from callback_data.main import CbData
 from utils.db import DB
 from utils.cache import CACHE
 
@@ -29,18 +27,15 @@ if __name__ == "__main__":
     redis_port = os.environ['redis_port']
     
     grafana_url = os.environ.get('grafana_url', 'http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1')
-    prometheus_rules_url = os.environ.get('prometheus_rules_url', 'http://localhost:9090/api/v1/rules')
-    prometheus_alert_groups = os.environ.get('prometheus_alert_groups', [])
-    prometheus_alert_tmpl = os.environ.get('prometheus_alert_tmpl', '../')
-
-    if isinstance(prometheus_alert_groups, str):
-        prometheus_alert_groups = prometheus_alert_groups.split(',')
-
+    prometheus_alert_path = os.environ.get('prometheus_alert_path', '../../alermanager/alerts/')
+    prometheus_alert_tmpl = os.environ.get('prometheus_alert_tmpl', './prom_alerts/alerts_tmpl.yml')
+    prometheus_alert_api = os.environ.get('prometheus_alert_api', 'http://prometheus:9090/api/v1/rules')
+    
+    cache = CACHE(redis_host, redis_port)
     web_app = web.Application()
-    db = DB(db_name,db_user,db_pass,db_host,db_port)
-    subs = subscriptions.Subscriptions(db, prometheus_rules_url, prometheus_alert_groups)
+    db = DB(db_name, db_user, db_pass,db_host,db_port)
     bot = Bot(token=tg_token, parse_mode="HTML")
-    validators_cache = CACHE(redis_host,redis_port)
+    validators_cache = CACHE(redis_host, redis_port)
 
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
@@ -49,17 +44,15 @@ if __name__ == "__main__":
 
     dp.include_router(router)
 
-    cb = CbData
-
     setup_message_handler('start')
 
-    setup_message_form('sub_filter')
     setup_message_form('support')
+    setup_message_form('accounts')
 
     setup_web_app('ping')
-    setup_web_app('prom_alert')
+    #setup_web_app('prom_alert')
     
-    from callback_query_handlers import main_menu,subscriptions
+    from callback_query_handlers import main_menu, subscribtions, accounts
     from middlewares import acl
 
     web_runner = web.AppRunner(web_app)

@@ -1,69 +1,70 @@
-groups:
-- name: Public alerts
-  rules:
-  - alert: Earned points(Total rate)
-    expr: sum by (account)(rate(polkadot_staking_eraPoints{chain = "{{ chain }}"}[1m])) == 0
-    for: 10m
-    labels:
-      alert_id: "{{ alert_id }}"
-      chat_id: "{{ chat_id }}"
-    annotations:
-      summary: "{{ $labels.chain }}: No one did not produce blocks for long time."
-      description: "{{ $labels.chain }} has a problem with blocks producing."
-      chain: "{{ $labels.chain }}"
-      account: "{{ $labels.account }}"
-      bot_description: "Will shout if noone produced block or proof\n\nmetric: polkadot_staking_eraPoints\nlabel: polkadot or kusama"
+rules:
+- alert: Earned points(Total rate)
+  expr: sum by (account)(rate(polkadot_staking_eraPoints{chain = "%chain%"}[1m])) == 0
+  for: "%interval%"
+  labels:
+    uniqueid: 1 
+    chat_id: "%chat_id%"
+  annotations:
+    summary: "{{ $labels.chain }}: No one did not produce blocks for long time."
+    description: "{{ $labels.chain }} has a problem with blocks producing."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if noone produced block or proof\n\n"
+    bot_add_description: "metric: polkadot_staking_eraPoints\nlabel: polkadot or kusamai\n\n"
 
-- name: Private alerts
-  rules:
-  - alert: Validator left set
-    expr: polkadot_session_disabledValidators{account ~= "{{ accounts_list }}"} == 1
-    for: 1m
-    labels:
-      alert_id: "{{ alert_id }}"
-      chat_id: "{{ chat_id }}"
-    annotations:
-      summary: "{{ $labels.chain }}: Validator has been kicked from the active set."
-      description: "Validator {{ $labels.account }} has been kicked from the active set."
-      chain: "{{ $labels.chain }}"
-      account: "{{ $labels.account }}"
-      bot_description: "Will shout if selected validator been kicked from active set\n\nmetric: polkadot_session_disabledValidators\nlabel: Validator SS58 address(possible to pass from four first symbols)"
+- alert: Validator left set
+  expr: polkadot_session_disabledValidators{account = "%accounts%"} == 1
+  for: "%interval%"
+  labels:
+    uniqueid: 2
+    chat_id: "%chat_id%"
+  annotations:
+    summary: "{{ $labels.chain }}: Validator has been kicked from the active set."
+    description: "Validator {{ $labels.account }} has been kicked from the active set."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if selected validator been kicked from active set\n\n"
+    bot_add_description: "metric: polkadot_session_disabledValidators"
 
-  - alert: Low GRANDPA precommits ratio
-    expr: (polkadot_finality_precommits{account ~= "{{ accounts_list }}"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < {{ treshold }} and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
-    for: 2m
-    labels:
-      alert_id: "{{ alert_id }}"
-      chat_id: "{{ chat_id }}"
-    annotations:
-      summary: "{{ $labels.chain }}: Validator has problem with block finality(precommits) less than {{ threshold }}%"
-      description: "Validator {{ $labels.account }} has problem with block finality(precommits) less than {{ treshold }}%"
-      chain: "{{ $labels.chain }}"
-      account: "{{ $labels.account }}"
-      bot_description: "Will shout if selected validator acts bad as a consensus member.\n\n\nlabel: Validator SS58 address(possible to pass from four first symbols\nlabel: threshold in percents)"
+- alert: Low GRANDPA precommits ratio
+  expr: (polkadot_finality_precommits{account = "%accounts%"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < %threshold% and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
+  for: "%interval%"
+  labels:
+    uniqueid: 3
+    chat_id: "%chat_id%"
+  annotations:
+    summary: "{{ $labels.chain }}: Validator has problem with block finality(precommits) less than %threshold% percents"
+    description: "Validator {{ $labels.account }} has problem with block finality(precommits) less than %threshold% percents"
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if selected validator acts bad as a consensus member(Precommits)."
+    bot_add_description: "label: Validator SS58 address(possible to pass from four first symbols\nlabel: threshold in percents)"
 
-  - alert: Low GRANDPA prevotes ratio
-    expr: (polkadot_finality_prevotes{account ~= "{{ accounts_list }}"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < {{ treshold }} and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
-    for: 2m
-    labels:
-      alert_id: "{{ alert_id }}"
-      chat_id: "{{ chat_id }}"
-    annotations:
-      summary: "{{ $labels.chain }}: Validator has problem with block finality(prevotes) less than {{ threshold }}%"
-      description: "Validator {{ $labels.account }} has problem with block finality(prevotes) less than {{ threshold }}%"
-      chain: "{{ $labels.chain }}"
-      account: "{{ $labels.account }}"
-      bot_description: "Will shout if selected validator acts bad as a consensus member.\n\n\nlabel: Validator SS58 address(possible to pass from four first symbols\nlabel: threshold in percents)"
+- alert: Low GRANDPA prevotes ratio
+  expr: (polkadot_finality_prevotes{account = "%accounts%"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < %threshold% and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
+  for: "%interval%"
+  labels:
+    uniqueid: 4
+    chat_id: "%chat_id%"
+  annotations:
+    summary: "{{ $labels.chain }}: Validator has problem with block finality(prevotes) less than %threshold% percents"
+    description: "Validator {{ $labels.account }} has problem with block finality(prevotes) less than %threshold% percents"
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if selected validator acts bad as a consensus member(Prevotes).\n\n"
+    bot_add_description: "label: Validator SS58 address(possible to pass from four first symbols\nlabel: threshold in percents)\n\n"
 
-  - alert: Earned points(Polkadot ParaValidator)
-    expr: polkadot_staking_eraPoints{account ~= "{{ accounts_list "}} < {{ treshold }} and on(chain) polkadot_session_sessionProgress > 75 and on(account) polkadot_session_paraValidators == 1
-    for: 1m
-    labels:
-      alert_id: "{{ alert_id }}"
-      chat_id: "{{ chat_id }}"
-    annotations:
-      summary: "{{ $labels.chain }}: ParaValidator {{ labels.account }} earns too litle points."
-      description: "ParaValidator {{ labels.account }} has a problem with blocks producing."
-      chain: "{{ $labels.chain }}"
-      account: "{{ $labels.account }}"
-      bot_description: "Will shout if selected validator acts as a paravalidators in current epoch and earning points less then threshhold if 75 percents of echoch and more gone.\n\n\nlabel: Validator SS58 address(possible to pass from four first symbols\nlabel: threshold in amount of earned points by 20"
+- alert: Earned points(Polkadot ParaValidator)
+  expr: polkadot_staking_eraPoints{account = "%accounts%"} < %threshold% and on(chain) polkadot_session_sessionProgress > 75 and on(account) polkadot_session_paraValidators == 1
+  for: "%interval%"
+  labels:
+    uniqueid: 5
+    chat_id: "%chat_id%"
+  annotations:
+    summary: "{{ $labels.chain }}: ParaValidator {{ $labels.account }} earns too litle points."
+    description: "ParaValidator {{ $labels.account }} has a problem with blocks producing."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if selected validator acts as a paravalidators in current epoch and earning points less then threshhold if 75 percents of echoch and more gone.\n\n"
+    bot_add_description: "label: Validator SS58 address(possible to pass from four first symbols\nlabel: threshold in amount of earned points by 20\n\n"

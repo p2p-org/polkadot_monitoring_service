@@ -7,9 +7,9 @@ class CACHE():
         self.redis_port = redis_port
 
     def connect(self):
-        self.r = redis.Redis(host=self.redis_host, port=self.redis_port, password=self.redis_pass, db=0)
+        self.r = redis.Redis(host=self.redis_host, port=self.redis_port, db=0)
 
-    def list(self,expr):
+    def get(self,expr):
         self.connect()
         result = []
 
@@ -24,3 +24,19 @@ class CACHE():
         finally: self.r.close()
 
         return result
+
+    def count(self):
+        self.connect()
+        result = []
+
+        try:
+            for key in self.r.scan_iter():
+                result.append(key.decode())
+
+        except redis.exceptions.ConnectionError:
+            logging.error("Unable connect to redis.")
+            return len(result)
+
+        finally: self.r.close()
+
+        return len(result)

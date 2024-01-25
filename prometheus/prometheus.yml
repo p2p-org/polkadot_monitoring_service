@@ -3,7 +3,7 @@ global:
   scrape_timeout: 10s
 
 rule_files:
- - 'alerts.yml'
+- 'rules/*.yml'
 
 scrape_configs:
 - job_name: polkadot_common_exporter

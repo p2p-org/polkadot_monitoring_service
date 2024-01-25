@@ -128,7 +128,7 @@ class DB():
                 Literal(value)))
         except (IndexError, KeyError):
             result = None
-
+        
         return result
 
     def add_account(self, chat_id, username):
@@ -152,63 +152,4 @@ class DB():
             DB.table_bot,
             DB.col_id,
             Literal(chat_id)))
-        self.commit()
-
-    def get_subscriptions(self, chat_id):
-        try:
-            result = self.query(SQL('SELECT {subscription_name}, {label}, {match} FROM {table} WHERE {chat_id} = {val1}').format(
-                subscription_name=DB.col_subscription_name,
-                label=DB.col_key,
-                match=DB.col_value,
-                table=DB.table_subscription,
-                chat_id=DB.col_chat_id,
-                val1=Literal(chat_id)), compact=False)
-        except Exception as e:
-            result = None
-        return result
-
-    def add_or_update_subscription(self, chat_id, subscription_name, matchers):
-        if not isinstance(matchers, dict):
-            return 0
-    
-        columns = [DB.col_chat_id, DB.col_subscription_name, DB.col_key, DB.col_value]
-        values = []
-        
-        for key, vals in matchers.items():
-            for val in vals:
-                try:
-                    values.append(SQL('({chat_id}, {subscription_name}, {key}, {value})').format(
-                        chat_id=Literal(chat_id),
-                        subscription_name=Literal(subscription_name),
-                        key=Literal(key),
-                        value=Literal(val)))
-                except IndexError:
-                    return 0
-
-        try:
-            self.query(SQL('DELETE FROM {table} WHERE {chat_id} = {val1} AND {subscription_name} = {val2}').format(
-                table=DB.table_subscription,
-                chat_id=DB.col_chat_id,
-                val1=Literal(chat_id),
-                subscription_name=DB.col_subscription_name,
-                val2=Literal(subscription_name)))
-            self.query(SQL('INSERT INTO {table} ({columns}) VALUES {values}').format(
-                table=DB.table_subscription,
-                columns=SQL(',').join(columns),
-                values=SQL(',').join(values)))
-            self._connection.commit()
-            return len(values)
-        except Exception as e:
-            logging.error("unable to add/update subscription: {}".format(str(e)))
-            self._connection.rollback()
-            return 0
-
-    def delete_subscription(self, chat_id, subscription_name):
-        self.query(SQL('DELETE FROM {table} WHERE {chat_id} = {val1} AND {subscription_name} = {val2}').format(
-            table=DB.table_subscription,
-            chat_id=DB.col_chat_id,
-            val1=Literal(chat_id),
-            subscription_name=DB.col_subscription_name,
-            val2=Literal(subscription_name)
-        ))
         self.commit()
