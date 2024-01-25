@@ -22,7 +22,7 @@ app = Flask(__name__)
 
 @app.route("/metrics")
 def metrics():
-    chain = get_config('chain')
+    chain = os.environ['CHAIN']
     metrics = q_metrics[0].copy()
 
     out = ""

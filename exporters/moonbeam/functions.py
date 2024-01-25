@@ -24,11 +24,6 @@ class SUBSTRATE_INTERFACE:
             logging.critical('The substrate api call failed with error ' + str(e))
             r = None
 
-def get_config(part):
-    with open('./config.yaml') as config_file:
-        data = yaml.load(config_file, Loader=yaml.FullLoader)
-
-    return data[part]
 
 def get_era_points(data):
     result = {}
