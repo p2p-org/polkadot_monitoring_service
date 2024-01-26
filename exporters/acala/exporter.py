@@ -11,7 +11,7 @@ import traceback
 import os
 from collections import deque
 from flask import Flask, request, make_response
-from functions import SUBSTRATE_INTERFACE, get_config, get_era_points, get_chain_info 
+from functions import SUBSTRATE_INTERFACE, get_era_points, get_chain_info 
 from _thread import interrupt_main
 from numpy import median, average, percentile
 from decimal import *
