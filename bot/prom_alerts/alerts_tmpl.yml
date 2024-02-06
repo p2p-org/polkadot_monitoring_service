@@ -1,70 +1,97 @@
 rules:
-- alert: Earned points(Total rate)
-  expr: sum by (account)(rate(polkadot_staking_eraPoints{chain = "%chain%"}[1m])) == 0
-  for: "%interval%"
+- alert: "[Demo]Test alert - showcase NOW."
+  expr: vector(1)
+  for: "[[interval]]"
   labels:
-    uniqueid: 1 
-    chat_id: "%chat_id%"
+    uniqueid: 1
+    chat_id: "[[chat_id]]"
   annotations:
-    summary: "{{ $labels.chain }}: No one did not produce blocks for long time."
-    description: "{{ $labels.chain }} has a problem with blocks producing."
-    chain: "{{ $labels.chain }}"
-    account: "{{ $labels.account }}"
-    bot_description: "Will shout if noone produced block or proof\n\n"
-    bot_add_description: "metric: polkadot_staking_eraPoints\nlabel: polkadot or kusamai\n\n"
+    summary: "Test alert."
+    description: "Test alert for user with id {{ labels.chat_id }}"
+    chain: "[[chain]]"
+    account: "[[accounts]]"
+    bot_description: "Here is a test alert, which will shout according [[interval]] value.\n\n❗ This text renders from annotations['bot_description'] key.\nFrom template if you are adding or from exist rule if view.\n\n❗ You must have accounts in portfolio and also set all possible filters here.\n\n☝️ [[interval]] [[chain]] [[threshold]] [[accounts]] - represent placeholders if just adding or rendered data if you already activated subscribtion."
 
-- alert: Validator left set
-  expr: polkadot_session_disabledValidators{account = "%accounts%"} == 1
-  for: "%interval%"
+- alert: "[Relay]Validator kicked from active set"
+  expr: | 
+    polkadot_session_disabledValidators{account=~"[[accounts]]"} == 1
+  for: "[[interval]]"
   labels:
     uniqueid: 2
-    chat_id: "%chat_id%"
+    chat_id: "[[chat_id]]"
   annotations:
     summary: "{{ $labels.chain }}: Validator has been kicked from the active set."
     description: "Validator {{ $labels.account }} has been kicked from the active set."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if selected validator been kicked from active set\n\n"
-    bot_add_description: "metric: polkadot_session_disabledValidators"
+    bot_description: "Will shout if some of selected validators has been kicked from the set."
 
-- alert: Low GRANDPA precommits ratio
-  expr: (polkadot_finality_precommits{account = "%accounts%"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < %threshold% and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
-  for: "%interval%"
+- alert: "[Relay]Finality GRANDPA precommits ratio"
+  expr: | 
+    (polkadot_finality_precommits{account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
+  for: "[[interval]]"
   labels:
     uniqueid: 3
-    chat_id: "%chat_id%"
+    chat_id: "[[chat_id]]"
   annotations:
-    summary: "{{ $labels.chain }}: Validator has problem with block finality(precommits) less than %threshold% percents"
-    description: "Validator {{ $labels.account }} has problem with block finality(precommits) less than %threshold% percents"
+    summary: "{{ $labels.chain }}: Validator has problem with block finality(precommits) less than [[threshold]]%"
+    description: "Validator {{ $labels.account }} has problem with block finality(precommits) less than [[threshold]]%"
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if selected validator acts bad as a consensus member(Precommits)."
-    bot_add_description: "label: Validator SS58 address(possible to pass from four first symbols\nlabel: threshold in percents)"
+    bot_description: "Will shout if some of selected validators acts bellow threshold value as a consensus member(Precommits).\nThreshold values 0 - 100"
 
-- alert: Low GRANDPA prevotes ratio
-  expr: (polkadot_finality_prevotes{account = "%accounts%"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < %threshold% and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
-  for: "%interval%"
+- alert: "[Relay]Finality GRANDPA prevotes ratio"
+  expr: | 
+    (polkadot_finality_prevotes{account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
+  for: "[[interval]]"
   labels:
     uniqueid: 4
-    chat_id: "%chat_id%"
+    chat_id: "[[chat_id]]"
   annotations:
-    summary: "{{ $labels.chain }}: Validator has problem with block finality(prevotes) less than %threshold% percents"
-    description: "Validator {{ $labels.account }} has problem with block finality(prevotes) less than %threshold% percents"
+    summary: "{{ $labels.chain }}: Validator has problem with block finality(prevotes) less than [[threshold]]%"
+    description: "Validator {{ $labels.account }} has problem with block finality(prevotes) less than [[threshold]]%"
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if selected validator acts bad as a consensus member(Prevotes).\n\n"
-    bot_add_description: "label: Validator SS58 address(possible to pass from four first symbols\nlabel: threshold in percents)\n\n"
+    bot_description: "Will shout if some of selected validators acts bellow threshold value as a consensus member(Prevotes).\nThreshold values 0 - 100"
 
-- alert: Earned points(Polkadot ParaValidator)
-  expr: polkadot_staking_eraPoints{account = "%accounts%"} < %threshold% and on(chain) polkadot_session_sessionProgress > 75 and on(account) polkadot_session_paraValidators == 1
-  for: "%interval%"
+- alert: "[Relay]Epoch ParaValidator rewards ratio"
+  expr: | 
+    (polkadot_pv_eraPoints{account=~"[[accounts]]"} / on (chain) group_left() polkadot_pv_pointsP95 * 100) < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 25
+  for: "[[interval]]"
   labels:
     uniqueid: 5
-    chat_id: "%chat_id%"
+    chat_id: "[[chat_id]]"
   annotations:
     summary: "{{ $labels.chain }}: ParaValidator {{ $labels.account }} earns too litle points."
     description: "ParaValidator {{ $labels.account }} has a problem with blocks producing."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if selected validator acts as a paravalidators in current epoch and earning points less then threshhold if 75 percents of echoch and more gone.\n\n"
-    bot_add_description: "label: Validator SS58 address(possible to pass from four first symbols\nlabel: threshold in amount of earned points by 20\n\n"
+    bot_description: "Will shout if some of selected validators acts as a paravalidators in current epoch and earning points less then threshhold value in 95percentile and if 25 percents of echoch and more gone.\nThreshold value 0 - 200"
+
+- alert: "[Relay]Epoch ParaValidator rewards raw"
+  expr: | 
+    (polkadot_pv_eraPoints{account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 85
+  for: "[[interval]]"
+  labels:
+    uniqueid: 6
+    chat_id: "[[chat_id]]"
+  annotations:
+    summary: "{{ $labels.chain }}: ParaValidator {{ $labels.account }} earns too litle points."
+    description: "ParaValidator {{ $labels.account }} has a problem with blocks producing."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators acts as a paravalidators in current epoch and earning points less then threshhold value and if 85 percents of echoch and more gone.\nThreshold value 0 - 20000 (2.5k - 4k for kusama and 15k - 20k for polka usually."
+
+- alert: "[Relay]Unapplied slashes for validators"
+  expr: |
+    polkadot_staking_unappliedSlashes{account=~"[[accounts]]"} == 1
+  for: "[[interval]]"
+  labels:
+    uniqueid: 7
+    chat_id: "[[chat_id]]"
+  annotations:
+    summary: "{{ $labels.account }}: Validator has been slashed."
+    description: "Validator {{ $labels.account }} has been slashed."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators has been slashed."

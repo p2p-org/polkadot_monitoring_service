@@ -10,16 +10,18 @@ from utils.menu_builder import MenuBuilder
 
 @router.callback_query(CbData.filter(F.dst == 'acc_menu'))
 async def acc_menu(query: CallbackQuery):
-    text = "Here you can mange validators list you would like to track.\n\nFor now we are processing over " + str(cache.count()) + " uniq validators in Polkadot and Kusama.\n\n" 
     chat_id = query.message.chat.id
     message_id = query.message.message_id
     validators = db.get_records('validators', 'id', chat_id)
     
     menu = MenuBuilder()
     
+    text = "<b>Here you can mange validators list you would like to track.\n\nFor now we are processing over " + str(cache.count()) + " uniq validators/collators.\n\n</b>"  
+
     if not validators:
         text += "No validators selected yet.\n\n"
     else:
+        text += str(len(validators.split(' '))) + ' addresses in portfolio.\n\n'
         idx = int(query.data.split(':')[3])
         validators = validators.split(' ')
         
@@ -27,16 +29,17 @@ async def acc_menu(query: CallbackQuery):
             validator = validators[idx]
         except IndexError:
             idx = 0
-            validator = int(validators[idx])
+            validator = validators[idx]
        
         text += '<b>' + validator + '</b>'
         
-        menu.button(text="<< Back", callback_data=CbData(dst="acc_menu", data="", id=idx - 1)) + "size=3"
-        menu.button(text="Delete", callback_data=CbData(dst="acc_delete", data=validator[:20], id=0)) + "size=3"
-        menu.button(text="Next >>", callback_data=CbData(dst="acc_menu", data="", id=idx + 1)) + "size=3"
+        menu.button(text="⏪ Prev", callback_data=CbData(dst="acc_menu", data="", id=idx - 1)) + "size=3"
+        menu.button(text="❌ Delete", callback_data=CbData(dst="acc_delete", data=validator[:20], id=0)) + "size=3"
+        menu.button(text="Next ⏩", callback_data=CbData(dst="acc_menu", data="", id=idx + 1)) + "size=3"
 
-    menu.button(text="➕ Add account", callback_data=CbData(dst="acc_add", data="", id=0).pack()) + "size=1"
-    menu.button(text="⬅️  Back", callback_data=CbData(dst="sub_menu", data="", id=0).pack()) + "size=1"
+    menu.button(text="⬅️  Back", callback_data=CbData(dst="sub_menu", data="", id=0).pack()) + "size=2"
+    menu.button(text="➕ Add account", callback_data=CbData(dst="acc_add", data="", id=0).pack()) + "size=2"
+
     menu.build()
 
     try:
@@ -48,6 +51,8 @@ async def acc_menu(query: CallbackQuery):
 
 @router.callback_query(CbData.filter(F.dst == 'acc_add'))
 async def acc_add(query: CallbackQuery, state: FSMContext):
+    d = await state.get_data()
+   
     message_id = query.message.message_id
     chat_id = query.message.chat.id
 
@@ -56,9 +61,8 @@ async def acc_add(query: CallbackQuery, state: FSMContext):
     menu.build()
 
     await state.set_state(Form.validators)
-    await state.set_data({chat_id:message_id})
+    await state.set_data({'chat_id':chat_id, 'message_id':message_id})
     await query.message.edit_text('Please enter first letters of requested validator account(ss58).\n\nPress <b>Back</b> if you changed your mind.\n\n', reply_markup=menu.as_markup())
-    await query.answer()
 
 @router.callback_query(CbData.filter(F.dst == 'acc_save'))
 async def acc_save(query: CallbackQuery, state: FSMContext):
@@ -66,16 +70,17 @@ async def acc_save(query: CallbackQuery, state: FSMContext):
 
     validators = db.get_records('validators','id', chat_id)
     validator = cache.get(query.data.split(':')[2])[0]
-
+    
     if not validators:
         validators = validator
     else:
-        validators += ' ' + validator 
+        if validator not in validators:
+            validators += ' ' + validator
        
     db.update_record(chat_id, 'validators', validators)
 
+    await query.answer('Account has been added')
     await acc_menu(query)
-    await query.answer()
 
 @router.callback_query(CbData.filter(F.dst == 'acc_delete'))
 async def acc_delete(query: CallbackQuery, state: FSMContext):
@@ -93,5 +98,5 @@ async def acc_delete(query: CallbackQuery, state: FSMContext):
     
     db.update_record(chat_id, 'validators', validators)
 
+    await query.answer('Account has been deleted')
     await acc_menu(query)
-    await query.answer()

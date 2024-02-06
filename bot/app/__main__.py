@@ -27,7 +27,7 @@ if __name__ == "__main__":
     redis_port = os.environ['redis_port']
     
     grafana_url = os.environ.get('grafana_url', 'http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1')
-    prometheus_alert_path = os.environ.get('prometheus_alert_path', '../../alermanager/alerts/')
+    prometheus_alert_path = os.environ.get('prometheus_alert_path', '../prometheus/rules/')
     prometheus_alert_tmpl = os.environ.get('prometheus_alert_tmpl', './prom_alerts/alerts_tmpl.yml')
     prometheus_alert_api = os.environ.get('prometheus_alert_api', 'http://prometheus:9090/api/v1/rules')
     

@@ -15,10 +15,10 @@ async def find_account(message: Message, state: FSMContext):
     
     old_menu = await state.get_data()
     msg = message.text
-    
+
     menu = MenuBuilder()
 
-    if msg.isalnum() and (len(msg) >= 3 and len(msg) <= 45):
+    if msg.isalnum() and (len(msg) >= 3 and len(msg) <= 55):
         c = cache.get(msg)
 
         if len(c) > 0:
@@ -29,16 +29,9 @@ async def find_account(message: Message, state: FSMContext):
             
             menu.button(text="Back", callback_data=CbData(dst='acc_menu', data="", id=0).pack()) + "size=1"
             menu.build()
-
-            await message.answer('We could find' + str(len(c)) + 'accounts.\n\nSelect one of them or click Back.\n\n', reply_markup=menu.as_markup())
-            await bot.delete_message(list(old_menu.keys())[0], list(old_menu.values())[0])
-        
-        else:
-            menu.button(text="Back", callback_data=CbData(dst='acc_menu', data="", id=0).pack()) + "size=1"
-            menu.build()
-
+            
             await state.clear()
-            await message.answer('We could not find any accounts relevant your expression.\n\n', reply_markup=menu.as_markup())
-            await bot.delete_message(list(old_menu.keys())[0], list(old_menu.values())[0])
-    else:
-        await bot.delete_message(chat_id, message_id)
+            await message.answer('We could find ' + str(len(c)) + ' accounts.\n\nSelect one of them or click Back.\n\n', reply_markup=menu.as_markup())
+            await bot.delete_message(old_menu['chat_id'], old_menu['message_id'])
+        
+    await bot.delete_message(chat_id, message_id)

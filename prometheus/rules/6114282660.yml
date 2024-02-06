@@ -1,0 +1,32 @@
+groups:
+- name: MaaS alert rules set
+  rules:
+  - alert: '[Relay]Finality GRANDPA prevotes ratio'
+    annotations:
+      account: '{{ $labels.account }}'
+      chain: '{{ $labels.chain }}'
+      description: Validator { $labels.account } has problem with block finality(prevotes)
+        less than 5%
+      summary: '{ $labels.chain }: Validator has problem with block finality(prevotes)
+        less than 5%'
+    expr: '(polkadot_finality_prevotes{account=~"(12xR6dkbJeZKN63Lv2H8YHzDRQG9uyTvc8ZprgKKqEnWKHqn|12xedMA9ZJFe6Ui5VDYML3PsCde2LbhUzEYEPyCgFRcJvfRB|12xezF6c5sTeoN6miTMe2SLKGWPCPsCT62BKnXLDC5avBZcE|FWxYu7XrMuCvKqyKQntmDsKgAtgYHa2KHiS3tijcLwyjnih|123452njqC3T7hBCWYUCGYyaT8BGzPfL1dAfY5g5mfBHKHtE|127zarPDhVzmCXVQ7Kfr1yyaa9wsMuJ74GJW9Q7ezHfQEgh6|148HzdSuFsDrNKnAHFs81BJzZxmKgwEC6Pmpw2QJnTy3Hv3R|147Vm38FWnBVq4NreDaf1bGgQYbx9mmJy6ikDkhkqF1PwRuT)"}
+      / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < 5 and on(account)
+      polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress
+      >= 3
+
+      '
+    for: 1m
+    labels:
+      accounts:
+      - 12xR6dkbJeZKN63Lv2H8YHzDRQG9uyTvc8ZprgKKqEnWKHqn
+      - 12xedMA9ZJFe6Ui5VDYML3PsCde2LbhUzEYEPyCgFRcJvfRB
+      - 12xezF6c5sTeoN6miTMe2SLKGWPCPsCT62BKnXLDC5avBZcE
+      - FWxYu7XrMuCvKqyKQntmDsKgAtgYHa2KHiS3tijcLwyjnih
+      - 123452njqC3T7hBCWYUCGYyaT8BGzPfL1dAfY5g5mfBHKHtE
+      - 127zarPDhVzmCXVQ7Kfr1yyaa9wsMuJ74GJW9Q7ezHfQEgh6
+      - 148HzdSuFsDrNKnAHFs81BJzZxmKgwEC6Pmpw2QJnTy3Hv3R
+      - 147Vm38FWnBVq4NreDaf1bGgQYbx9mmJy6ikDkhkqF1PwRuT
+      chat_id: 6114282660
+      interval: 1m
+      threshold: '5'
+      uniqueid: 4
