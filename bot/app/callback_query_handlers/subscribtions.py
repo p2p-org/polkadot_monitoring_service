@@ -264,21 +264,23 @@ async def sub_set_threshold(query: CallbackQuery, state: FSMContext):
     
     d = await state.get_data()
    
-    threshold_min = 0 
-    threshold_max = 100000
-    
     try:
         digit = str(query.data.split(':')[2])
+        
         if digit == "reset":
             d['check_list']['threshold']['data'] = ""
             d['check_list']['threshold']['emoji'] = '❌ '
+        
         else:
-            d['check_list']['threshold']['data'] += digit
+            if len(d['check_list']['threshold']['data']) < 5:
+                d['check_list']['threshold']['data'] += digit
+            
             d['check_list']['threshold']['emoji'] = '✅ '
     
     except TypeError:
         d['check_list']['threshold']['data'] = ""
         d['check_list']['threshold']['emoji'] = '❌ '
+
 
     await state.set_data(d)
 
@@ -301,7 +303,7 @@ async def sub_set_threshold(query: CallbackQuery, state: FSMContext):
     menu.build()
 
     try:
-        await query.message.edit_text(text="Set threshold value. Limit: 100000\n\n" + "Value: " + d['check_list']['threshold']['data'], reply_markup=menu.as_markup())
+        await query.message.edit_text(text="Value: " + d['check_list']['threshold']['data'], reply_markup=menu.as_markup())
     except TelegramBadRequest:
         pass
 
