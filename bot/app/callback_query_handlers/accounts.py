@@ -13,6 +13,8 @@ async def acc_menu(query: CallbackQuery):
     chat_id = query.message.chat.id
     message_id = query.message.message_id
     validators = db.get_records('validators', 'id', chat_id)
+
+    acc_max = 10
     
     menu = MenuBuilder()
     
@@ -21,7 +23,7 @@ async def acc_menu(query: CallbackQuery):
     if not validators:
         text += "No validators selected yet.\n\n"
     else:
-        text += str(len(validators.split(' '))) + ' addresses in portfolio.\n\n'
+        text += str(len(validators.split(' '))) + ' addresses in portfolio.\nMaximum possible ' + str(acc_max) + '\n\n'
         idx = int(query.data.split(':')[3])
         validators = validators.split(' ')
         
@@ -38,8 +40,15 @@ async def acc_menu(query: CallbackQuery):
         menu.button(text="Next ⏩", callback_data=CbData(dst="acc_menu", data="", id=idx + 1)) + "size=3"
 
     menu.button(text="⬅️  Back", callback_data=CbData(dst="sub_menu", data="", id=0).pack()) + "size=2"
-    menu.button(text="➕ Add account", callback_data=CbData(dst="acc_add", data="", id=0).pack()) + "size=2"
-
+    
+    if validators:
+        if len(validators) < acc_max:
+            menu.button(text="➕ Add account", callback_data=CbData(dst="acc_add", data="", id=0).pack()) + "size=2"
+        else:
+            await query.answer('Maximum amount of accounts reached.')
+    else:
+        menu.button(text="➕ Add account", callback_data=CbData(dst="acc_add", data="", id=0).pack()) + "size=2"
+    
     menu.build()
 
     try:
