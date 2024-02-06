@@ -100,10 +100,11 @@ async def sub_view(query: CallbackQuery):
             continue
         
         if k == 'accounts':
-            if len(v) < 8:
-                v = [addr[:3] + '..' + addr[-3:] for addr in v]
+            if len(v.split('|')) < 8:
+                v = [addr[:3] + '..' + addr[-3:] for addr in v.replace('(','').replace(')','').split('|')]
+                v = ', '.join(v)
             else:
-                v = str(len(v)) + ' accounts in rule'
+                v = str(len(v.split('|'))) + ' accounts in rule'
         
         labels += k + ': ' + str(v) + '\n'
     

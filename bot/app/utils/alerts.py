@@ -1,4 +1,4 @@
-from __main__ import prometheus_alert_path, prometheus_alert_tmpl, prometheus_alert_api
+from __main__ import prometheus_alert_path, prometheus_alert_tmpl, prometheus_alert_api, prometheus_config_reload
 import yaml
 import json
 import requests
@@ -71,10 +71,13 @@ class Alerts():
          
         return result
         
-    def list_alerts(self):
+    def _list_alerts(self):
         self.content = requests.get(prometheus_alert_api)
 
         return self.content.json()
+
+    def _config_reload(self):
+         return requests.post(prometheus_config_reload)
 
     def add_rule(self, uniqueid: int = None, check_list: Union[dict, str] = None, template: Union[dict, str] = None):
         rule = {}
@@ -82,19 +85,19 @@ class Alerts():
         try:
             self.content = self._load_yml(prometheus_alert_path + '/' + str(self.chat_id) + '.yml')
         except (FileNotFoundError):
-            self.content = {'groups':[{'name':'MaaS alert rules set','rules':[]}]}
+            self.content = {'groups':[{'name':'MaaS alert rules set for ' + str(self.chat_id),'rules':[]}]}
 
         try:
             self.content['groups'][0]['rules'] = [ i for i in self.content['groups'][0]['rules'] if int(i['labels']['uniqueid']) != int(uniqueid) ]
         except TypeError:
-            self.content = {'groups':[{'name':'MaaS alert rules set','rules':[]}]}
+            self.content = {'groups':[{'name':'MaaS alert rules set for ' + str(self.chat_id),'rules':[]}]}
         
 
         check_list = {k:v['data'] for k,v in check_list.items()}
         check_list['chat_id'] = self.chat_id
-        
-        template['labels'].update(check_list) 
+
         check_list['accounts'] = '(' + '|'.join(check_list['accounts']) + ')'
+        template['labels'].update(check_list) 
 
         for label,line in template.items():
             if isinstance(line, dict):
@@ -102,6 +105,7 @@ class Alerts():
                 for k,v in line.items():
                     if k == 'bot_description':
                         continue
+                    
                     if len(re.findall(r'\[\[(.*?)\]\]', str(v))) > 0:
                         rule[label][k] = v.replace('[[','{').replace(']]','}').format(**check_list)
                     else:
@@ -115,6 +119,11 @@ class Alerts():
                         center = re.findall(r'\{(.*?)\}', str(line))
                         if len(center) > 0:
                             center = center[0]
+                            
+                            if "$" in center:
+                                rule[label] = line
+                                continue
+
                             before = line.split('{')[0]
                             after = line.split('}')[1]
                             
@@ -126,6 +135,8 @@ class Alerts():
 
         self._save_yml(prometheus_alert_path + '/' + str(self.chat_id) + '.yml', self.content)
 
+        self._config_reload()
+
         return self.content
 
     def delete_rule(self,uniqueid: int = None):
@@ -136,5 +147,7 @@ class Alerts():
         self.content['groups'][0]['rules'] = rules
 
         self._save_yml(prometheus_alert_path + '/' + str(self.chat_id) + '.yml', self.content)
+
+        self._config_reload()
 
         return self.content
