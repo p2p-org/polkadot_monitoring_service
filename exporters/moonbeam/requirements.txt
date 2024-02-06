@@ -1,4 +1,4 @@
-numpy
-flask
-requests
-pyyaml
+pyaml==23.5.9
+substrate-interface==1.7.1
+flask==2.3.2
+numpy==1.24.3

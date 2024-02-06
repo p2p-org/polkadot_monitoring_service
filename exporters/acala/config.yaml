@@ -1,5 +1,5 @@
 ---
-api_substrate: https://acala-api.polka.p2p.world/api
+ws_endpoint: ws://scaleway-acala-node1:9934
 chain: acala
 exporter:
   listen: 0.0.0.0

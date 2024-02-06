@@ -6,15 +6,23 @@ import yaml
 import time
 import json
 import logging
+import operator
+import traceback
+import os
 from collections import deque
 from flask import Flask, request, make_response
+from functions import SUBSTRATE_INTERFACE, get_era_points, get_chain_info 
+from _thread import interrupt_main
+from numpy import median, average, percentile
+from decimal import *
+
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %I:%M:%S')
 app = Flask(__name__)
 
 @app.route("/metrics")
 def metrics():
-    chain = get_config('chain')
+    chain = os.environ['CHAIN']
     metrics = q_metrics[0].copy()
 
     out = ""
@@ -51,45 +59,6 @@ def metrics():
 
     return response
 
-def api_request(endpoint = "api_substrate",method = None,args = None):
-    if endpoint == 'api_substrate':
-        url = get_config('api_substrate')
-
-        if isinstance(args, list):
-            for i in range(len(args)):
-                if isinstance(args[i], str):
-                    args[i] = '"' + args[i] + '"'
-        elif isinstance(args, str):
-            args = '"' + args + '"'
-        elif not args:
-            args = ""
-
-        data = {'method': method,
-                'args': args}
-
-    elif endpoint == 'api_registry':
-        url = get_config('api_registry')
-
-        data = {'method': method}
-
-    try:
-        r = requests.post(url, json=data)
-    except (ConnectionRefusedError,requests.exceptions.ConnectionError):
-        logging.critical('Coulnd not get data from ' + endpoint)
-
-        return None
-
-    if r.status_code == 200:
-        return r.json()['result']
-    else:
-        logging.critical('Request to ' + endpoint + ' finished with code ' + str(r.status_code))
-        return None
-
-def get_config(part):
-    with open('./config.yaml') as config_file:
-        data = yaml.load(config_file, Loader=yaml.FullLoader)
-
-    return data[part]
 
 def main():
     block = 0
@@ -97,18 +66,17 @@ def main():
 
     while True:
         try:
-            last_block = int(api_request(method = 'api.query.system.number'),16)
-
+            last_block = substrate_interface.request('System','Number').value
             if last_block != block:
-                validators = api_request(method = 'api.query.session.validators')
-                current_session = int(api_request(method = 'api.query.session.currentIndex'),16)
-                disabled_validators = api_request(method = 'api.query.session.disabledValidators')
+                validators = substrate_interface.request('Session','Validators').value
+                current_session = substrate_interface.request('Session','CurrentIndex').value
+                disabled_validators = substrate_interface.request('Session','DisabledValidators').value
                 result = {'validators':{},'common':{}}
                 result['common'] = {}
                 result['common']['active_validators_count'] = len(validators)
                 result['common']['current_session'] = current_session
                 for addr in validators: 
-                    points = int(api_request(method = 'api.query.collatorSelection.sessionPoints', args = addr),16)
+                    points =  substrate_interface.request('CollatorSelection','SessionPoints', [addr]).value
                     validator_points  = {k:points for k in validators if k == addr}
                     result['validators'].update(validator_points)
                              
@@ -125,8 +93,14 @@ def main():
         time.sleep(3)
 
 if __name__ == '__main__':
-    endpoint_listen = get_config('exporter')['listen']
-    endpoint_port = get_config('exporter')['port']
+
+    endpoint_listen = os.environ['LISTEN']
+    endpoint_port = os.environ['PORT']
+    ws_endpoint = os.environ['WS_ENDPOINT']
+    chain = os.environ['CHAIN']
+
+
+    substrate_interface = SUBSTRATE_INTERFACE(ws_endpoint,chain)
 
     q_metrics = deque([])
 
