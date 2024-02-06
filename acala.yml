@@ -1,0 +1,17 @@
+version: '3.4'
+
+services:
+  acala_exporter:
+    build:
+      context: ./exporters/acala
+      args:
+        exporter: "acala_exporter"
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150" 
+    - "CHAIN=acala"
+    env_file:
+    - ./acala.env
+    networks:
+    - exporters
+
