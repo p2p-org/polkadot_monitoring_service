@@ -14,16 +14,16 @@ async def acc_menu(query: CallbackQuery):
     message_id = query.message.message_id
     validators = db.get_records('validators', 'id', chat_id)
 
-    acc_max = 10
+    acc_max = 15
     
     menu = MenuBuilder()
     
-    text = "<b>Here you can mange validators list you would like to track.\n\nFor now we are processing over " + str(cache.count()) + " uniq validators/collators.\n\n</b>"  
+    text = "Here you can mange accounts you would like to track.\n\nFor now we are processing over " + str(cache.count()) + " uniq accounts of validators or collators.\n\n"  
 
     if not validators:
-        text += "No validators selected yet.\n\n"
+        text += "☝️ No accounts in portfolio yet."
     else:
-        text += str(len(validators.split(' '))) + ' addresses in portfolio.\nMaximum possible ' + str(acc_max) + '\n\n'
+        text += '☝️ Accounts in portfolio: ' + str(len(validators.split(' '))) + '\n👉 Maximum possible: ' + str(acc_max) + '\n\n'
         idx = int(query.data.split(':')[3])
         validators = validators.split(' ')
         

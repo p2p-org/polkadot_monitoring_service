@@ -78,7 +78,7 @@ async def sub_manage(query: CallbackQuery, state: FSMContext):
     menu.build()
 
     try:
-        await query.message.edit_text(text="<b>Here you can choose all necessary subscbtions for you.\n\nFor now we cover:\nPolkadot/Kusama and some parachains like Moonbeam/Moonriver, Acala/karura, Astar/Shiden.\n\nYou can always contribute to alert expressions list by edit prometheus template in project(Button Learn)</b>", reply_markup=menu.as_markup())
+        await query.message.edit_text(text="Here you can choose all necessary subscbtions for you.\n\n☝️ For now we cover:\nPolkadot/Kusama and some parachains like Moonbeam/Moonriver and Acala/Karura.\n\n👍 We appriciate any contributions to alert expressions list.\nFor more info click <b>Learn</b>", reply_markup=menu.as_markup())
     except TelegramBadRequest:
         pass
 
@@ -108,7 +108,7 @@ async def sub_view(query: CallbackQuery):
         
         labels += k + ': ' + str(v) + '\n'
     
-    text = '<b>🔹 ' + template['alert'] + '\n\n' + '🔻 ' + template['annotations']['bot_description'] + '\n\n' + 'Labels:\n' + labels + '</b>'
+    text = '🔹 ' + template['alert'] + '\n\n' + '🔻 ' + template['annotations']['bot_description'] + '\n\n' + 'Labels:\n' + labels
 
     menu = MenuBuilder()
 
@@ -158,7 +158,7 @@ async def sub_edit(query: CallbackQuery, state: FSMContext):
     
     await state.set_data(check_list)
 
-    check_list_text = ""
+    check_list_text = "      "
 
     for k,v in check_list['check_list'].items():
         if k == 'accounts' and v['data'] != 'undefined':
@@ -166,9 +166,9 @@ async def sub_edit(query: CallbackQuery, state: FSMContext):
         else:
             check_list_text += v['emoji'] + k.capitalize() + ': ' + v['data']
 
-        check_list_text += "\n"
+        check_list_text += "\n      "
         
-    text = '<b>🔹 ' + template['alert'] + '\n\n' + '🔻' + template['annotations']['bot_description'] + "\n\n<b>Mandatory filters:</b>\n" + check_list_text + "\n\n</b>"
+    text = '🔹 ' + template['alert'] + '\n\n' + '🔻 ' + template['annotations']['bot_description'] + "\n\n🔸 Mandatory filters:\n" + check_list_text + "\n\n"
 
     menu = MenuBuilder()
 

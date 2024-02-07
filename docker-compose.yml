@@ -104,6 +104,16 @@ services:
     - monitoring
     restart: unless-stopped
 
+  github_release_exporter:
+    build:
+      context: ./exporters/github_release
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150"
+    networks:
+    - exporters
+
+
 volumes:
     postgres: {}
     prometheus_data: {}
