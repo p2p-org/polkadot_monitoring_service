@@ -4,8 +4,6 @@ services:
   moonriver_exporter:
     build:
       context: ./exporters/moonbeam
-      args:
-        exporter: "moonriver_exporter"
     environment:
     - "LISTEN=0.0.0.0"
     - "PORT=9150" 

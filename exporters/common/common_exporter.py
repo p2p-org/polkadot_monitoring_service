@@ -37,10 +37,13 @@ app = Flask(__name__)
 @app.route('/metrics', methods=['GET'])
 def metrics():
     chain = os.environ['CHAIN']
+    
     if len(q_metrics) == 0:
         response = make_response("", 200)
         response.mimetype = "text/plain"
+    
         return response
+    
     metrics = q_metrics[0].copy()
 
     out = ""

@@ -42,6 +42,18 @@ scrape_configs:
   - targets:
     - 'kusama_events_exporter:9150'
 
+- job_name: moonbeam_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'moonbeam_exporter:9150'
+
+- job_name: moonriver_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'moonriver_exporter:9150'
+
 alerting:
   alertmanagers:
     - scheme: http
