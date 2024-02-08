@@ -6,6 +6,7 @@ services:
     volumes:
       - ./prometheus/:/etc/prometheus/
       - prometheus_data:/prometheus
+      - prometheus_rules:/etc/prometheus/rules/
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -46,17 +47,19 @@ services:
     - monitoring
     - bot
 
-      #  bot:
-      #    build:
-      #      context: ./bot
-      #    env_file:
-      #    - ./bot.env
-      #    ports:
-      #    - "8080:8080"
-      #    networks:
-      #    - bot
-      #    - postgres
-      #    - monitoring
+  bot:
+    build:
+      context: ./bot
+    env_file:
+    - ./bot.env
+    volumes:
+    - prometheus_rules:/prometheus_rules
+    ports:
+    - "8080:8080"
+    networks:
+    - bot
+    - postgres
+    - monitoring
 
   postgres:
     image: postgres:13
@@ -117,6 +120,7 @@ services:
 volumes:
     postgres: {}
     prometheus_data: {}
+    prometheus_rules: {}
     grafana_data: {}
     alertmanager-data: {}
     pgadmin: {}
