@@ -53,6 +53,7 @@ services:
     env_file:
     - ./bot.env
     volumes:
+    - ./bot/alerts_tmpl.yml:/app/alerts_tmpl.yml
     - prometheus_rules:/prometheus_rules
     ports:
     - "8080:8080"
