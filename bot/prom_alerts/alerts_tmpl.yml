@@ -10,25 +10,23 @@ rules:
     description: "Test alert for user with id {{ labels.chat_id }}"
     chain: "[[chain]]"
     account: "[[accounts]]"
-    bot_description: "Here is a test alert, which will shout according [[interval]] value.\n\n❗ This text renders from annotations['bot_description'] key.\nFrom template if you are adding or from exist rule if view.\n\n❗ You must have accounts in portfolio and also set all possible filters here.\n\n☝️ [[interval]] [[chain]] [[threshold]] [[accounts]] - represent placeholders if just adding or rendered data if you already activated subscribtion."
+    bot_description: "Here is a test alert, which will shout according [[interval]] value.\n\n❗ This text renders from annotations['bot_description'] key.\nFrom template if you are adding or from exist rule if view.\n\n❗ You must have accounts in portfolio and also set all possible filters here.\n\n☝️ [[interval]] [[threshold]] [[accounts]] [[chains]] [[names]] - represent placeholders if just adding or rendered data if you already activated subscribtion."
 
-- alert: "[Relay]Validator kicked from active set"
-  expr: | 
-    polkadot_session_disabledValidators{account=~"[[accounts]]"} == 1
+- alert: "Latest releases on github"
+  expr: |
+    github_latest_release_seconds{project=~"[[project]]"} < [[threshold]]
   for: "[[interval]]"
   labels:
     uniqueid: 2
     chat_id: "[[chat_id]]"
   annotations:
-    summary: "{{ $labels.chain }}: Validator has been kicked from the active set."
-    description: "Validator {{ $labels.account }} has been kicked from the active set."
-    chain: "{{ $labels.chain }}"
-    account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators has been kicked from the set."
+    summary: "{{ $labels.name }}: Has been released recently."
+    description: "New version for {{ $labels.name }} has been released recently."
+    bot_description: "Will shout if some of monitored project been release LESS than threshold value in seconds ago."
 
 - alert: "[Relay]Finality GRANDPA precommits ratio"
   expr: | 
-    (polkadot_finality_precommits{account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
+    (polkadot_finality_precommits{chain=~"[[chain]]", account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
   for: "[[interval]]"
   labels:
     uniqueid: 3
@@ -42,7 +40,7 @@ rules:
 
 - alert: "[Relay]Finality GRANDPA prevotes ratio"
   expr: | 
-    (polkadot_finality_prevotes{account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
+    (polkadot_finality_prevotes{chain=~"[[chain]]", account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
   for: "[[interval]]"
   labels:
     uniqueid: 4
@@ -56,7 +54,7 @@ rules:
 
 - alert: "[Relay]Epoch ParaValidator rewards ratio"
   expr: | 
-    (polkadot_pv_eraPoints{account=~"[[accounts]]"} / on (chain) group_left() polkadot_pv_pointsP95 * 100) < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 25
+    (polkadot_pv_eraPoints{chain=~"[[chain]]", account=~"[[accounts]]"} / on (chain) group_left() polkadot_pv_pointsP95 * 100) < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 25
   for: "[[interval]]"
   labels:
     uniqueid: 5
@@ -70,7 +68,7 @@ rules:
 
 - alert: "[Relay]Epoch ParaValidator rewards raw"
   expr: | 
-    (polkadot_pv_eraPoints{account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 85
+    (polkadot_pv_eraPoints{chain=~"[[chain]]", account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 85
   for: "[[interval]]"
   labels:
     uniqueid: 6
@@ -84,7 +82,7 @@ rules:
 
 - alert: "[Relay]Unapplied slashes for validators"
   expr: |
-    polkadot_staking_unappliedSlashes{account=~"[[accounts]]"} == 1
+    polkadot_staking_unappliedSlashes{chain=~"[[chain]]", account=~"[[accounts]]"} == 1
   for: "[[interval]]"
   labels:
     uniqueid: 7

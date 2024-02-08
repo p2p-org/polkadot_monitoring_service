@@ -30,6 +30,7 @@ if __name__ == "__main__":
     prometheus_alert_path = os.environ.get('prometheus_alert_path', '../prometheus/rules/')
     prometheus_alert_tmpl = os.environ.get('prometheus_alert_tmpl', './prom_alerts/alerts_tmpl.yml')
     prometheus_alert_api = os.environ.get('prometheus_alert_api', 'http://prometheus:9090/api/v1/rules')
+    prometheus_metric_api = os.environ.get('prometheus_metric_api', 'http://prometheus:9090/api/v1/series')
     prometheus_config_reload = os.environ.get('prometheus_config_reload', 'http://prometheus:9090/-/reload')
     
     cache = CACHE(redis_host, redis_port)

@@ -1,4 +1,4 @@
-from __main__ import prometheus_alert_path, prometheus_alert_tmpl, prometheus_alert_api, prometheus_config_reload
+from __main__ import prometheus_alert_path, prometheus_alert_tmpl, prometheus_alert_api, prometheus_metric_api, prometheus_config_reload
 import yaml
 import json
 import requests
@@ -18,6 +18,28 @@ class Alerts():
     def _save_yml(self,path,data):
         with open(path, 'w') as file:
             yaml.dump(data, file)
+
+    def get_labels(self, template: Union[dict, str] = None, key: str = None):
+        metric = template['expr'].split('{')[0].replace("(", "").split(" ")[-1]
+        self.content = requests.get(prometheus_metric_api + '?match[]=' + metric).json()
+        
+        try:
+            if isinstance(self.content['data'], list):
+                labels = []
+
+                for i in self.content['data']:
+                    if key in i:
+                        if i[key] not in labels:
+                            labels.append(i[key])
+
+                return labels
+            
+            else:
+                return []
+
+        except KeyError:
+            return []
+
 
     def list_templates(self):
         rules = self._load_yml(self.prometheus_alert_tmpl)['rules']
@@ -95,8 +117,12 @@ class Alerts():
 
         check_list = {k:v['data'] for k,v in check_list.items()}
         check_list['chat_id'] = self.chat_id
+       
 
-        check_list['accounts'] = '(' + '|'.join(check_list['accounts']) + ')'
+        for k,v in check_list.items():
+            if isinstance(v, list):
+                check_list[k] = '(' + '|'.join(check_list[k]) + ')'
+
         template['labels'].update(check_list) 
 
         for label,line in template.items():

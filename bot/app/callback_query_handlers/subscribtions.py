@@ -124,6 +124,7 @@ async def sub_view(query: CallbackQuery):
 
     await query.answer()
 
+
 @router.callback_query(CbData.filter(F.dst == 'sub_edit'))
 async def sub_edit(query: CallbackQuery, state: FSMContext):
     chat_id = query.message.chat.id
@@ -140,6 +141,7 @@ async def sub_edit(query: CallbackQuery, state: FSMContext):
         await state.set_state(Form.subscribtions)
 
         check_list = {'id': uniqueid, 'check_list':{i:{'data': 'undefined', 'emoji': '❌ '} for i in mandatory_filters if i != 'chat_id'}}
+
     elif isinstance(d,dict) and len(d.keys()) > 0:
         check_list = d
     else:
@@ -150,6 +152,7 @@ async def sub_edit(query: CallbackQuery, state: FSMContext):
             validators = db.get_records('validators', 'id', chat_id).split(' ')
         except AttributeError:
             await query.answer('Please define accounts. Subsbtions menu -> My accounts')
+            
             validators = 'undefined'
         
         if len(validators) > 0 and validators != 'undefined':
@@ -164,7 +167,7 @@ async def sub_edit(query: CallbackQuery, state: FSMContext):
         if k == 'accounts' and v['data'] != 'undefined':
             check_list_text += v['emoji'] + k.capitalize() + ': ' + str(len(v['data'])) + ' accounts in portfolio.'
         else:
-            check_list_text += v['emoji'] + k.capitalize() + ': ' + v['data']
+            check_list_text += v['emoji'] + k.capitalize() + ': ' + str(v['data'])
 
         check_list_text += "\n      "
         
@@ -172,15 +175,18 @@ async def sub_edit(query: CallbackQuery, state: FSMContext):
 
     menu = MenuBuilder()
 
+    if 'project' in check_list['check_list'].keys():
+        menu.button(text='Select projects',callback_data=CbData(dst="sub_set_labels", data=".project", id=uniqueid).pack()) + "size=1"
+
+    if 'chain' in check_list['check_list'].keys():
+        menu.button(text='Select chains', callback_data=CbData(dst="sub_set_labels", data=".chain", id=uniqueid).pack()) + "size=1"
+
     if 'interval' in check_list['check_list'].keys():
         menu.button(text='Set time interval',callback_data=CbData(dst="sub_set_interval", data="", id=uniqueid).pack()) + "size=1"
     
     if 'threshold' in check_list['check_list'].keys():
-        menu.button(text="Select threshold", callback_data=CbData(dst="sub_set_threshold", data="reset", id=uniqueid).pack()) + "size=1"
+        menu.button(text="Set threshold", callback_data=CbData(dst="sub_set_threshold", data="reset", id=uniqueid).pack()) + "size=1"
 
-    if 'chain' in check_list['check_list'].keys():
-        menu.button(text='Set chain', callback_data=CbData(dst="sub_set_chain", data="", id=uniqueid).pack()) + "size=1"
-    
     if isinstance(d,dict) and len(d.keys()) > 0:
         statuses = [v['data'] for k,v in d['check_list'].items()]
 
@@ -204,12 +210,68 @@ async def sub_edit(query: CallbackQuery, state: FSMContext):
     
     await query.answer()
 
+
+@router.callback_query(CbData.filter(F.dst == 'sub_set_labels'))
+async def sub_set_labels(query: CallbackQuery, state: FSMContext):
+    chat_id = query.message.chat.id
+    uniqueid = int(query.data.split(':')[3])
+
+    d = await state.get_data()
+    
+    if query.data.split(':')[2].startswith('.'):
+        label_name = query.data.split(':')[2].replace('.', '').split(',')[0]
+        
+        try:
+            label_value = query.data.split(':')[2].replace('.', '').split(',')[1]
+        except IndexError:
+            label_value = None
+
+    try:
+        if label_value and label_value == "reset":
+            d['check_list'][label_name]['data'] = ""
+            d['check_list'][label_name]['emoji'] = '❌ '
+
+        else:
+            try:
+                if label_value:
+                    d['check_list'][label_name]['data'].append(label_value)
+            except AttributeError:
+                d['check_list'][label_name]['data'] = [label_value]
+                d['check_list'][label_name]['emoji'] = '✅ '
+
+    except (TypeError, AttributeError):
+        d['check_list'][label_name]['data'] = ""
+        d['check_list'][label_name]['emoji'] = '❌ '
+
+    alerts = Alerts(chat_id)
+    template = alerts.get_template(uniqueid)
+    
+    label_values = alerts.get_labels(template, label_name)
+    
+    menu = MenuBuilder()
+
+    if isinstance(label_values, list) and len(label_values) > 0:
+        for label in label_values:
+            if label in d['check_list'][label_name]['data']:
+                menu.button(text='🟢 ' + label, callback_data=CbData(dst="sub_set_labels", data="reset", id=uniqueid).pack()) + "size=1"
+            else:
+                menu.button(text=label, callback_data=CbData(dst="sub_set_labels", data="."+label_name + ',' + label, id=uniqueid).pack()) + "size=1"
+    
+    menu.button(text="⬅️  Back", callback_data=CbData(dst="sub_edit", data="", id=uniqueid).pack()) + "size=2"
+    menu.button(text="Reset", callback_data=CbData(dst="sub_set_labels", data="."+label_name + ',' + "reset", id=uniqueid).pack()) + "size=2"
+    menu.build()
+
+    await state.set_data(d)
+    await query.message.edit_text(text="Please select labels from list bellow.\n\n", reply_markup=menu.as_markup())
+
+
 @router.callback_query(CbData.filter(F.dst == 'sub_set_interval'))
 async def sub_set_interval(query: CallbackQuery, state: FSMContext):
     uniqueid = int(query.data.split(':')[3])
     interval = query.data.split(':')[2]
     
     d = await state.get_data()
+    
     intervals = ['30s','1m','2m','5m','10m','30m']
         
     if interval:
@@ -224,38 +286,12 @@ async def sub_set_interval(query: CallbackQuery, state: FSMContext):
         for interval in intervals:
             menu.button(text=interval, callback_data=CbData(dst="sub_set_interval", data=interval, id=uniqueid).pack()) + "size=3"
         
-        menu.button(text="Back", callback_data=CbData(dst="sub_edit", data="", id=uniqueid).pack()) + "size=1"
+        menu.button(text="⬅️   Back", callback_data=CbData(dst="sub_edit", data="", id=uniqueid).pack()) + "size=1"
         menu.build()
      
         await state.set_data(d)
         await query.message.edit_text(text="Please select time interval.\n\n", reply_markup=menu.as_markup())
 
-@router.callback_query(CbData.filter(F.dst == 'sub_set_chain'))
-async def sub_set_interval(query: CallbackQuery, state: FSMContext):
-    uniqueid = int(query.data.split(':')[3])
-    chain = query.data.split(':')[2]
-
-    d = await state.get_data()
-    chains = ['polkadot','kusama']
-
-    if chain:
-        d['check_list']['chain']['data'] = query.data.split(':')[2]
-        d['check_list']['chain']['emoji'] = '✅ '
-
-        await state.set_data(d)
-        await sub_edit(query,state)
-
-    else:
-        menu = MenuBuilder()
-
-        for chain in chains:
-            menu.button(text=chain, callback_data=CbData(dst="sub_set_chain", data=chain, id=uniqueid).pack()) + "size=1"
-
-        menu.button(text="Back", callback_data=CbData(dst="sub_edit", data="", id=uniqueid).pack()) + "size=1"
-        menu.build()
-
-        await state.set_data(d)
-        await query.message.edit_text(text="Please select the chain.\n\nCurrently only Polkadot and Kusama possible.\n\n", reply_markup=menu.as_markup())
 
 @router.callback_query(CbData.filter(F.dst == 'sub_set_threshold'))
 async def sub_set_threshold(query: CallbackQuery, state: FSMContext):
@@ -303,7 +339,7 @@ async def sub_set_threshold(query: CallbackQuery, state: FSMContext):
     menu.build()
 
     try:
-        await query.message.edit_text(text="Value: " + d['check_list']['threshold']['data'], reply_markup=menu.as_markup())
+        await query.message.edit_text(text="Here you can type necessary threshold value.\n\nValue: " + d['check_list']['threshold']['data'], reply_markup=menu.as_markup())
     except TelegramBadRequest:
         pass
 
