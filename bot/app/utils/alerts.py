@@ -23,15 +23,17 @@ class Alerts():
 
 
     def _config_reload(self):
+        if prometheus_config_reload == "":
+            return
         try:
-            return requests.post(prometheus_config_reload, timeout=0.2)
+            return requests.post(prometheus_config_reload, timeout=0.5)
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             return None
 
 
     def get_rule_from_prom(self, uniqueid: int = None):
         try:
-            self.content = requests.get(prometheus_rules_api, timeout=0.2).json()
+            self.content = requests.get(prometheus_rules_api, timeout=0.5).json()
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             print('Timeout')
             return {}

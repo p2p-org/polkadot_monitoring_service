@@ -50,7 +50,7 @@ intensivly polls rpc method `grandpa_roundState` and calculates grandpa round pa
 
 Exposed metrics:
 
-* `polkadot_finality_roundProcessed`(chain) Processed round - Rounds processed
+* `polkadot_finality_roundsProcessed`(chain) Processed round - Rounds processed
 * `polkadot_finality_prevotes`(chain,account) - Amount of prevoutes successed by validators
 * `polkadot_finality_precommits`(chain,account) - Amount of precommits succesed by validators (became to 2/3)
 

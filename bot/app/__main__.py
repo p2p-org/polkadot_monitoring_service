@@ -25,6 +25,10 @@ if __name__ == "__main__":
 
     redis_host = os.environ.get('redis_host', 'redis')
     redis_port = os.environ.get('redis_port', '6379')
+    try:
+        redis_password = os.environ['redis_password']
+    except KeyError:
+        redis_password = None
     
     grafana_url = os.environ.get('grafana_url', 'http://grafana:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1')
     prometheus_alert_path = os.environ.get('prometheus_alert_path', '/prometheus_rules/')
@@ -33,11 +37,10 @@ if __name__ == "__main__":
     prometheus_metric_api = os.environ.get('prometheus_metric_api', 'http://prometheus:9090/api/v1/series')
     prometheus_config_reload = os.environ.get('prometheus_config_reload', 'http://prometheus:9090/-/reload')
     
-    cache = CACHE(redis_host, redis_port)
+    cache = CACHE(redis_host, redis_port, redis_password)
     web_app = web.Application()
     db = DB(db_name, db_user, db_pass,db_host,db_port)
     bot = Bot(token=tg_token, parse_mode="HTML")
-    validators_cache = CACHE(redis_host, redis_port)
 
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)

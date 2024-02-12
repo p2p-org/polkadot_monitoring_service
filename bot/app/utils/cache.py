@@ -2,12 +2,13 @@ import logging
 import redis
 
 class CACHE():
-    def __init__(self, redis_host, redis_port):
+    def __init__(self, redis_host, redis_port, redis_password=None):
         self.redis_host = redis_host
         self.redis_port = redis_port
+        self.redis_password = redis_password
 
     def connect(self):
-        self.r = redis.Redis(host=self.redis_host, port=self.redis_port, db=0)
+        self.r = redis.Redis(host=self.redis_host, port=self.redis_port, password=self.redis_password, db=0)
 
     def get(self,expr):
         self.connect()

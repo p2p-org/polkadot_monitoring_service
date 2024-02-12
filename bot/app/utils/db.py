@@ -9,12 +9,7 @@ from psycopg.sql import Identifier, Literal, SQL
 
 class DB():
     table_bot             = Identifier('maas_bot_v1')
-    table_subscription    = Identifier('maas_subscription')
     col_id                = Identifier('id')
-    col_chat_id           = Identifier('chat_id')
-    col_subscription_name = Identifier('subscription_name')
-    col_key               = Identifier('key_name')
-    col_value             = Identifier('key_value')
 
     def __init__(self, db_name, db_user, db_pass, db_host, db_port):
         self.db_user = db_user

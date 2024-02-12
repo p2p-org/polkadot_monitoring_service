@@ -65,7 +65,7 @@ Common exporter:
 
 Finality exporter:
 
-- `polkadot_finality_roundProcessed`(chain) Processed round - Rounds processed
+- `polkadot_finality_roundsProcessed`(chain) Processed round - Rounds processed
 - `polkadot_finality_prevotes`(chain, account) - Amount of success prevotes by validators
 - `polkadot_finality_precommits`(chain, account) - Amount of success precommits by validators (became to 2/3)
 
