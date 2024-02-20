@@ -80,6 +80,38 @@ func MustMap(p interface{}) Mapped {
 	}
 }
 
+func MustSlice(p interface{}) []interface{} {
+	switch v := p.(type) {
+	case []interface{}:
+		var res []interface{}
+		for i := 0; i < len(v); i++ {
+			res = append(res, v[i])
+		}
+		return res
+	default:
+		return []interface{}{}
+	}
+}
+
+func MustInt(p interface{}) uint64 {
+	switch v := p.(type) {
+	case string:
+		if len(v) >= 2 && (v[:2] == "0x" || v[:2] == "0X") {
+			v, _ := strconv.ParseUint(v[2:], 16, 64)
+			return v
+		}
+		return 0
+	case uint32:
+		return uint64(v)
+	case uint64:
+		return v
+	case float64:
+		return uint64(v)
+	default:
+		return 0
+	}
+}
+
 func (r Mapped) MustStringMap(key string) map[string]string {
 	res := make(map[string]string)
 	switch v := r[key].(type) {
@@ -98,20 +130,7 @@ func (r Mapped) MustStringMap(key string) map[string]string {
 }
 
 func (r Mapped) MustInt(key string) uint64 {
-	switch v := r[key].(type) {
-	case string:
-		if len(v) >= 2 && (v[:2] == "0x" || v[:2] == "0X") {
-			v, _ := strconv.ParseUint(v[2:], 16, 64)
-			return v
-		}
-		return 0
-	case uint64:
-		return v
-	case float64:
-		return uint64(v)
-	default:
-		return 0
-	}
+	return MustInt(r[key])
 }
 
 func (r Mapped) Get(key string) Mapped {

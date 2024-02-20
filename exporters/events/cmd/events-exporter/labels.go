@@ -16,9 +16,11 @@ import (
 const (
 	MetricChainEventsCount          = "polkadot_events"
 	MetricChainEventsByAccountCount = "polkadot_events_by_account"
+	MetricBackingVotesExpectedCount = "polkadot_pv_backing_votes_expected"
+	MetricBackingVotesMissedCount   = "polkadot_pv_backing_votes_missed"
 )
 
-func (reader *EventsReader) GetMonitoringEvents() []monitoring.MonitoringEvent {
+func (reader *HeadReader) GetMonitoringEvents() []monitoring.MonitoringEvent {
 	extra := []string{}
 	if reader.registry != nil {
 		extra = append(extra, "node")
@@ -33,18 +35,28 @@ func (reader *EventsReader) GetMonitoringEvents() []monitoring.MonitoringEvent {
 			Labels:   []string{"chain", "module", "method"},
 		},
 		{
-			Name:     "polkadot_events_by_account",
+			Name:     MetricChainEventsByAccountCount,
 			TypeName: monitoring.TypeCounter,
 			Labels:   append([]string{"chain", "module", "method", "account"}, extra...),
+		},
+		{
+			Name:     MetricBackingVotesExpectedCount,
+			TypeName: monitoring.TypeCounter,
+			Labels:   append([]string{"chain", "account"}, extra...),
+		},
+		{
+			Name:     MetricBackingVotesMissedCount,
+			TypeName: monitoring.TypeCounter,
+			Labels:   append([]string{"chain", "account"}, extra...),
 		},
 	}
 }
 
-func (reader *EventsReader) SetObserver(mon monitoring.Observer) {
+func (reader *HeadReader) SetObserver(mon monitoring.Observer) {
 	reader.mon = mon
 }
 
-func (reader *EventsReader) LabelValues(module string, method string, account string) []string {
+func (reader *HeadReader) LabelValues(account string, others ...string) []string {
 	var extra []string
 	if account != "" {
 		extra = []string{reader.decoder.SS58Encode(account)}
@@ -61,11 +73,19 @@ func (reader *EventsReader) LabelValues(module string, method string, account st
 	if reader.cfg.LabelChainValue != "" {
 		chain = reader.cfg.LabelChainValue
 	}
-	return append([]string{chain, module, method}, extra...)
+	var finalValues []string
+	finalValues = append(finalValues, chain)
+	if len(others) > 0 {
+		finalValues = append(finalValues, others...)
+	}
+	if len(extra) > 0 {
+		finalValues = append(finalValues, extra...)
+	}
+	return finalValues
 }
 
 // Read/Cache validator identity up to super if possible for better grouping
-func (reader *EventsReader) GetValidatorsIdentity(ctx context.Context, accU32 string) string {
+func (reader *HeadReader) GetValidatorsIdentity(ctx context.Context, accU32 string) string {
 	var (
 		resp string
 		err  error
@@ -130,7 +150,7 @@ func (reader *EventsReader) GetValidatorsIdentity(ctx context.Context, accU32 st
 	return id
 }
 
-func (reader *EventsReader) ReadKnownValidatorsFile(filename string) {
+func (reader *HeadReader) ReadKnownValidatorsFile(filename string) {
 	if filename != "" {
 		fi, err := os.Lstat(filename)
 		if err != nil {
@@ -165,7 +185,7 @@ func (reader *EventsReader) ReadKnownValidatorsFile(filename string) {
 	}
 }
 
-func (reader *EventsReader) GetValidatorsHostname(accU32 string) string {
+func (reader *HeadReader) GetValidatorsHostname(accU32 string) string {
 	if reader.registry == nil {
 		return ""
 	}
