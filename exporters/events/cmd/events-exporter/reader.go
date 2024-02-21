@@ -150,31 +150,18 @@ func (reader *HeadReader) ProcessBlockParaVotes(ctx context.Context, hash string
 			}
 			missingVotes := getMissingValidatorsFrom(validatorGroups, votedValidators)
 			for _, vv := range votedValidators {
-				if reader.registry != nil {
-					if reader.GetValidatorsHostname(psValidators[vv]) != "" {
-						reader.mon.ProcessEvent(MetricBackingVotesMissedCount, 0, reader.LabelValues(psValidators[vv])...)
-						reader.mon.ProcessEvent(MetricBackingVotesExpectedCount, 1, reader.LabelValues(psValidators[vv])...)
-					}
-				} else {
-					reader.mon.ProcessEvent(MetricBackingVotesMissedCount, 0, reader.LabelValues(psValidators[vv])...)
+				if reader.registry == nil || reader.GetValidatorsHostname(psValidators[vv]) != "" {
 					reader.mon.ProcessEvent(MetricBackingVotesExpectedCount, 1, reader.LabelValues(psValidators[vv])...)
 				}
-
 			}
 			if len(missingVotes) > 0 {
 				for _, mv := range missingVotes {
-					if reader.registry != nil {
-						if reader.GetValidatorsHostname(psValidators[mv]) != "" {
-							reader.mon.ProcessEvent(MetricBackingVotesMissedCount, 1, reader.LabelValues(psValidators[mv])...)
-							reader.mon.ProcessEvent(MetricBackingVotesExpectedCount, 1, reader.LabelValues(psValidators[mv])...)
-						}
-					} else {
+					if reader.registry == nil || reader.GetValidatorsHostname(psValidators[mv]) != "" {
 						reader.mon.ProcessEvent(MetricBackingVotesMissedCount, 1, reader.LabelValues(psValidators[mv])...)
 						reader.mon.ProcessEvent(MetricBackingVotesExpectedCount, 1, reader.LabelValues(psValidators[mv])...)
 					}
 				}
 			}
-
 		}
 	}
 	return nil

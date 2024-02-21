@@ -55,7 +55,7 @@ func (broker *WSMessageBroker) WSRequest(ctx context.Context, req *dto.RPCFrame)
 			return nil, brokerResp.Error
 		}
 	case <-ctx.Done():
-		return nil, fmt.Errorf("error %v during reques: %s", ctx.Err(), req.Raw)
+		return nil, fmt.Errorf("%v during request: %s, params: %v", ctx.Err(), req.Method, req.Params)
 	}
 
 }
