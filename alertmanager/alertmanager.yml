@@ -8,4 +8,4 @@ receivers:
   - name: tg-webhook
     webhook_configs:
     - url: http://bot:8080/prom_alert
-      send_resolved: false
+      send_resolved: true

@@ -96,6 +96,25 @@ def metrics():
         pass
 
     try:
+        out += "# HELP polkadot_staking_slashedValidators Unapplied slashes to exact validators\n"
+        out += "# TYPE polkadot_staking_slashedValidators counter\n"
+
+        for k, v in metrics['slashedValidators'].items():
+            out += 'polkadot_staking_slashedValidators{chain="%s", account="%s"} %s\n' % (chain, k, v)
+
+    except KeyError:
+        pass
+
+    try:
+        out += "# HELP polkadot_staking_slashedValidatorsCount Count of slashed validators in excat network\n"
+        out += "# TYPE polkadot_staking_slashedValidatorsCount counter\n"
+
+        out += 'polkadot_staking_slashedValidatorsCount{chain="%s"} %s\n' % (chain, metrics['slashedValidatorsCount'])
+
+    except KeyError:
+        pass
+
+    try:
         out += '# HELP polkadot_session_currentSession Current session\n'
         out += '# TYPE polkadot_session_currentSession counter\n'
 
@@ -266,15 +285,44 @@ def calculate_session_points(validator, current_session, era_sessions, era_point
     q_state.append(state)
 
 
-def construct_metrics(era, current_session, era_progress, session_progress, session_validators, paravalidators, era_points):
+def get_unapplied_slashes(chain, era):
+    slashed_validators = []
+
+    if chain == 'polkadot':
+        max_era = era + 5
+    elif chain == 'kusama':
+        max_era = era + 30
+    else:
+        max_era = era + 30
+
+    while era < max_era:
+        r = substrate_interface.request('Staking', 'UnappliedSlashes', [era]).value
+
+        for i in r:
+            slashed_validators.append(i['validator'])
+
+        era = era + 1
+
+    result = {'slashed_validators_count': 0, 'slashed_validators_list': ['null_validator']}
+
+    for i in slashed_validators:
+        result['slashed_validators_count'] += 1
+        result['slashed_validators_list'].append(i)
+
+    return result
+
+
+def construct_metrics(era, current_session, era_progress, session_progress, session_validators, paravalidators, slashed_validators, era_points):
     state = q_state[0].copy()
     raw_data = {}
 
     result = {'common': {}, 'pv_eraPoints': {}}
     result['sessionValidators'] = {k: 1 for k in session_validators}
+    result['slashedValidators'] = {k: 1 for k in slashed_validators['slashed_validators_list']}
     result['paraValidators'] = {k: 1 for k in paravalidators}
     result['eraPoints'] = {k: v for k, v in era_points['result'].items() if k in session_validators}
     result['totalEraPoints'] = era_points['total']
+    result['slashedValidatorsCount'] = slashed_validators['slashed_validators_count']
 
     result['common']['currentEra'] = era
     result['common']['currentSession'] = current_session
@@ -320,6 +368,7 @@ def main():
             era_points = get_era_points(substrate_interface.request('Staking', 'ErasRewardPoints', [era]).value)
             session_validators = substrate_interface.request('Session', 'Validators').value
             paravalidators = substrate_interface.request('ParaSessionInfo', 'AccountKeys', [current_session]).value
+            slashed_validators = get_unapplied_slashes(chain, era)
 
             if first_iter is True:
                 q_state.append(warmup_state(era, start_session, current_session, session_progress, era_points))
@@ -328,7 +377,7 @@ def main():
             for validator in paravalidators:
                 calculate_session_points(validator, current_session, era_sessions, era_points)
 
-            metrics = construct_metrics(era, current_session, era_progress, session_progress, session_validators, paravalidators, era_points)
+            metrics = construct_metrics(era, current_session, era_progress, session_progress, session_validators, paravalidators, slashed_validators, era_points)
 
             q_metrics.clear()
             q_metrics.append(metrics)

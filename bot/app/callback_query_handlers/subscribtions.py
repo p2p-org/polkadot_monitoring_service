@@ -66,12 +66,25 @@ async def sub_manage(query: CallbackQuery, state: FSMContext):
     
     for template in templates:
         uniqueid = int(template['labels']['uniqueid'])
-        r = alerts.get_rule(uniqueid=uniqueid)
-
-        if len(r) == 0:
+        
+        rule_from_file = alerts.get_rule_from_file(uniqueid=uniqueid)
+        rule_from_prom = alerts.get_rule_from_prom(uniqueid=uniqueid)
+        
+        if len(rule_from_file) == 0:
             menu.button(text="➕ " + template['alert'], callback_data=CbData(dst='sub_edit', data="", id=uniqueid)) + "size=1"
         else:
-            menu.button(text="🟢 " + template['alert'], callback_data=CbData(dst='sub_view', data="", id=uniqueid)) + "size=1"
+            if len(rule_from_prom) == 0:
+                menu.button(text="⏳ " + template['alert'], callback_data=CbData(dst='sub_view', data="", id=uniqueid)) + "size=1"
+            else:
+                if rule_from_prom['state'] == 'firing':
+                    menu.button(text="🔥🔥🔥 " + template['alert'], callback_data=CbData(dst='sub_view', data="", id=uniqueid)) + "size=1"
+                elif rule_from_prom['state'] == 'pending':
+                    menu.button(text="🔥 " + template['alert'], callback_data=CbData(dst='sub_view', data="", id=uniqueid)) + "size=1"
+                elif rule_from_prom['state'] == 'inactive':
+                    menu.button(text="🟢 " + template['alert'], callback_data=CbData(dst='sub_view', data="", id=uniqueid)) + "size=1"
+                else:
+                    menu.button(text="⁉️  " + template['alert'], callback_data=CbData(dst='sub_view', data="", id=uniqueid)) + "size=1"
+
 
     menu.button(text="⬅️  Back", callback_data=CbData(dst="sub_menu", data="", id=0).pack()) + "size=2"
     menu.button(text="🧠 Learn", callback_data=CbData(dst="support_subscribtions", data="", id=0).pack()) + "size=2"
@@ -91,24 +104,29 @@ async def sub_view(query: CallbackQuery):
 
     alerts = Alerts(chat_id)
     template = alerts.get_template(uniqueid)
-    rule = alerts.get_rule(uniqueid)
+
+    rule = alerts.get_rule_from_prom(uniqueid)
 
     labels = ""
+    state = "Deployment"
     
-    for k,v in rule['labels'].items():
-        if k == 'chat_id' or k == 'uniqueid':  
-            continue
-        
-        if k == 'accounts':
-            if len(v.split('|')) < 8:
-                v = [addr[:3] + '..' + addr[-3:] for addr in v.replace('(','').replace(')','').split('|')]
-                v = ', '.join(v)
-            else:
-                v = str(len(v.split('|'))) + ' accounts in rule'
-        
-        labels += k + ': ' + str(v) + '\n'
+    if 'labels' in rule.keys():
+        for k,v in rule['labels'].items():
+            if k == 'chat_id' or k == 'uniqueid' or k == 'labels_source':  
+                continue
+            
+            if k == 'accounts':
+                if len(v.split('|')) < 8:
+                    v = [addr[:3] + '..' + addr[-3:] for addr in v.replace('(','').replace(')','').split('|')]
+                    v = ', '.join(v)
+                else:
+                    v = str(len(v.split('|'))) + ' accounts in rule'
+            
+            labels += k + ': ' + str(v) + '\n'
+
+        state = rule['state']
     
-    text = '🔹 ' + template['alert'] + '\n\n' + '🔻 ' + template['annotations']['bot_description'] + '\n\n' + 'Labels:\n' + labels
+    text = '🔹 ' + template['alert'] + '\n\n' + '🔻 ' + template['annotations']['bot_description'] + '\n\n' + 'Labels:\n' + labels + '\n\n' + 'State: <b>' + state + '</b>' 
 
     menu = MenuBuilder()
 
@@ -333,7 +351,12 @@ async def sub_set_threshold(query: CallbackQuery, state: FSMContext):
     menu.button(text="7", callback_data=CbData(dst="sub_set_threshold", data="7", id=uniqueid).pack()) + "size=3"
     menu.button(text="8", callback_data=CbData(dst="sub_set_threshold", data="8", id=uniqueid).pack()) + "size=3"
     menu.button(text="9", callback_data=CbData(dst="sub_set_threshold", data="9", id=uniqueid).pack()) + "size=3"
-    menu.button(text="Save", callback_data=CbData(dst="sub_edit", data="", id=uniqueid).pack()) + "size=3"
+    
+    if len(d['check_list']['threshold']['data']) > 0:
+        menu.button(text="Save", callback_data=CbData(dst="sub_edit", data="", id=uniqueid).pack()) + "size=3"
+    else:
+        menu.button(text="Back", callback_data=CbData(dst="sub_edit", data="", id=uniqueid).pack()) + "size=3"
+    
     menu.button(text="0", callback_data=CbData(dst="sub_set_threshold", data="0", id=uniqueid).pack()) + "size=3"
     menu.button(text="Reset", callback_data=CbData(dst="sub_set_threshold", data="reset", id=uniqueid).pack()) + "size=3"
     menu.build()

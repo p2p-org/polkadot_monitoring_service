@@ -29,7 +29,7 @@ if __name__ == "__main__":
     grafana_url = os.environ.get('grafana_url', 'http://grafana:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1')
     prometheus_alert_path = os.environ.get('prometheus_alert_path', '/prometheus_rules/')
     prometheus_alert_tmpl = os.environ.get('prometheus_alert_tmpl', './alerts_tmpl.yml')
-    prometheus_alert_api = os.environ.get('prometheus_alert_api', 'http://prometheus:9090/api/v1/rules')
+    prometheus_rules_api = os.environ.get('prometheus_rules_api', 'http://prometheus:9090/api/v1/rules')
     prometheus_metric_api = os.environ.get('prometheus_metric_api', 'http://prometheus:9090/api/v1/series')
     prometheus_config_reload = os.environ.get('prometheus_config_reload', 'http://prometheus:9090/-/reload')
     
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     setup_web_app('ping')
     setup_web_app('prom_alert')
     
-    from callback_query_handlers import main_menu, subscribtions, accounts
+    from callback_query_handlers import main_menu, subscribtions, accounts, misc
     from middlewares import acl
 
     web_runner = web.AppRunner(web_app)

@@ -1,4 +1,4 @@
-from __main__ import prometheus_alert_path, prometheus_alert_tmpl, prometheus_alert_api, prometheus_metric_api, prometheus_config_reload
+from __main__ import prometheus_alert_path, prometheus_alert_tmpl, prometheus_rules_api, prometheus_metric_api, prometheus_config_reload
 import yaml
 import json
 import requests
@@ -6,21 +6,68 @@ import re
 from typing import Union
 
 class Alerts():
-    def __init__(self,chat_id: int):
+    def __init__(self, chat_id: int):
         self.prometheus_alert_path = prometheus_alert_path
         self.prometheus_alert_tmpl = prometheus_alert_tmpl
         self.chat_id = chat_id
 
-    def _load_yml(self,path):
+
+    def _load_yml(self, path):
         with open(path) as file:
             return yaml.load(file, Loader=yaml.FullLoader)
 
-    def _save_yml(self,path,data):
+
+    def _save_yml(self, path, data):
         with open(path, 'w') as file:
             yaml.dump(data, file)
 
+
+    def _config_reload(self):
+        try:
+            return requests.post(prometheus_config_reload, timeout=0.2)
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            return None
+
+
+    def get_rule_from_prom(self, uniqueid: int = None):
+        try:
+            self.content = requests.get(prometheus_rules_api, timeout=0.2).json()
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            print('Timeout')
+            return {}
+
+        try:
+            for group in self.content['data']['groups']:
+                if int(group['name']) == self.chat_id:
+                    for rule in group['rules']:
+                        if int(rule['labels']['uniqueid']) == uniqueid:
+                            return rule
+        
+        except KeyError:
+            return {}
+
+        return {}
+
+
+    def get_rule_from_file(self, uniqueid: int = None):
+        try:
+            rules = self._load_yml(prometheus_alert_path + '/' + str(self.chat_id) + '.yml')['groups'][0]['rules']
+        except (FileNotFoundError, KeyError, IndexError, TypeError):
+            return {}
+
+        for rule in rules:
+            if rule['labels']['uniqueid'] == uniqueid:
+                return rule
+
+        return {}
+
+
     def get_labels(self, template: Union[dict, str] = None, key: str = None):
-        metric = template['expr'].split('{')[0].replace("(", "").split(" ")[-1]
+        try:
+            metric = template['labels']['labels_source']
+        except KeyError:
+            return []
+
         self.content = requests.get(prometheus_metric_api + '?match[]=' + metric).json()
         
         try:
@@ -46,6 +93,7 @@ class Alerts():
        
         return rules
 
+
     def get_template(self, uniqueid: int = None):
         rules = self._load_yml(self.prometheus_alert_tmpl)['rules']
 
@@ -55,17 +103,6 @@ class Alerts():
 
         return None
 
-    def get_rule(self, uniqueid: int = None):
-        try:
-            rules = self._load_yml(prometheus_alert_path + '/' + str(self.chat_id) + '.yml')['groups'][0]['rules']
-        except (FileNotFoundError, KeyError, IndexError, TypeError):
-            return {}
-
-        for rule in rules:
-            if rule['labels']['uniqueid'] == uniqueid:
-                return rule
-
-        return {}
 
     def get_variables(self, template: Union[dict, str] = None, uniqueid: int = None):
         def append_data(data):
@@ -92,14 +129,7 @@ class Alerts():
                 append_data(t)
          
         return result
-        
-    def _list_alerts(self):
-        self.content = requests.get(prometheus_alert_api)
 
-        return self.content.json()
-
-    def _config_reload(self):
-         return requests.post(prometheus_config_reload)
 
     def add_rule(self, uniqueid: int = None, check_list: Union[dict, str] = None, template: Union[dict, str] = None):
         rule = {}
@@ -107,12 +137,12 @@ class Alerts():
         try:
             self.content = self._load_yml(prometheus_alert_path + '/' + str(self.chat_id) + '.yml')
         except (FileNotFoundError):
-            self.content = {'groups':[{'name':'MaaS alert rules set for ' + str(self.chat_id),'rules':[]}]}
+            self.content = {'groups':[{'name': str(self.chat_id), 'rules': []}]}
 
         try:
             self.content['groups'][0]['rules'] = [ i for i in self.content['groups'][0]['rules'] if int(i['labels']['uniqueid']) != int(uniqueid) ]
         except TypeError:
-            self.content = {'groups':[{'name':'MaaS alert rules set for ' + str(self.chat_id),'rules':[]}]}
+            self.content = {'groups':[{'name': str(self.chat_id), 'rules': []}]}
         
 
         check_list = {k:v['data'] for k,v in check_list.items()}
@@ -164,6 +194,7 @@ class Alerts():
         self._config_reload()
 
         return self.content
+
 
     def delete_rule(self,uniqueid: int = None):
         self.content = self._load_yml(prometheus_alert_path + '/' + str(self.chat_id) + '.yml')

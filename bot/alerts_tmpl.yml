@@ -1,27 +1,15 @@
 rules:
-- alert: "[Demo]Test alert - showcase NOW."
-  expr: vector(1)
-  for: "[[interval]]"
-  labels:
-    uniqueid: 1
-    chat_id: "[[chat_id]]"
-  annotations:
-    summary: "Test alert."
-    description: "Test alert for user with id {{ labels.chat_id }}"
-    chain: "[[chain]]"
-    account: "[[accounts]]"
-    bot_description: "Here is a test alert, which will shout according [[interval]] value.\n\n❗ This text renders from annotations['bot_description'] key.\nFrom template if you are adding or from exist rule if view.\n\n❗ You must have accounts in portfolio and also set all possible filters here.\n\n☝️ [[interval]] [[threshold]] [[accounts]] [[chains]] [[names]] - represent placeholders if just adding or rendered data if you already activated subscribtion."
-
 - alert: "Latest releases on github"
   expr: |
     github_latest_release_seconds{project=~"[[project]]"} < [[threshold]]
   for: "[[interval]]"
   labels:
-    uniqueid: 2
+    uniqueid: 1
     chat_id: "[[chat_id]]"
+    labels_source: github_latest_release_seconds
   annotations:
-    summary: "{{ $labels.name }}: Has been released recently."
-    description: "New version for {{ $labels.name }} has been released recently."
+    summary: "{{ $labels.project }}: Has been released recently."
+    description: "New version for {{ $labels.project }} has been released recently."
     bot_description: "Will shout if some of monitored project been release LESS than threshold value in seconds ago."
 
 - alert: "[Relay]Finality GRANDPA precommits ratio"
@@ -29,67 +17,83 @@ rules:
     (polkadot_finality_precommits{chain=~"[[chain]]", account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
   for: "[[interval]]"
   labels:
-    uniqueid: 3
+    uniqueid: 2
     chat_id: "[[chat_id]]"
+    labels_source: polkadot_finality_precommits
   annotations:
-    summary: "{{ $labels.chain }}: Validator has problem with block finality(precommits) less than [[threshold]]%"
-    description: "Validator {{ $labels.account }} has problem with block finality(precommits) less than [[threshold]]%"
+    summary: "Validator has problem with block finality(precommits)!!!"
+    description: "Validator {{ $labels.account }} participate in finality for {{ $value }} percent."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
     bot_description: "Will shout if some of selected validators acts bellow threshold value as a consensus member(Precommits).\nThreshold values 0 - 100"
 
-- alert: "[Relay]Finality GRANDPA prevotes ratio"
-  expr: | 
-    (polkadot_finality_prevotes{chain=~"[[chain]]", account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
+- alert: "[Relay]PV candidates backing by validator"
+  expr: |
+    (increase(polkadot_pv_backing_votes_missed{chain=~"[[chain]]",account=~"[[accounts]]"}[10m])) / on (account) group_left() (increase(polkadot_pv_backing_votes_expected[10m]) * 100) > [[threshold]]
   for: "[[interval]]"
   labels:
-    uniqueid: 4
+    uniqueid: 3
     chat_id: "[[chat_id]]"
+    labels_source: polkadot_pv_backing_votes_missed
   annotations:
-    summary: "{{ $labels.chain }}: Validator has problem with block finality(prevotes) less than [[threshold]]%"
-    description: "Validator {{ $labels.account }} has problem with block finality(prevotes) less than [[threshold]]%"
+    summary: "ParaValidator has very little of backed candidates!!!"
+    description: "ParaValidator {{ $labels.account }} has skipped {{ $value }} percents of candidates."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators acts bellow threshold value as a consensus member(Prevotes).\nThreshold values 0 - 100"
+    bot_description: "Will shout if some of selected validators having lots of missed candidates backing.\nThreshold value 0 - 100"
 
 - alert: "[Relay]Epoch ParaValidator rewards ratio"
   expr: | 
     (polkadot_pv_eraPoints{chain=~"[[chain]]", account=~"[[accounts]]"} / on (chain) group_left() polkadot_pv_pointsP95 * 100) < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 25
   for: "[[interval]]"
   labels:
-    uniqueid: 5
+    uniqueid: 4
     chat_id: "[[chat_id]]"
+    labels_source: polkadot_pv_eraPoints
   annotations:
-    summary: "{{ $labels.chain }}: ParaValidator {{ $labels.account }} earns too litle points."
-    description: "ParaValidator {{ $labels.account }} has a problem with blocks producing."
+    summary: "ParaValidator earns too litle points. Bad PoV!"
+    description: "ParaValidator {{ $labels.account }} has ratio {{ $value }} in 95 percentile."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
     bot_description: "Will shout if some of selected validators acts as a paravalidators in current epoch and earning points less then threshhold value in 95percentile and if 25 percents of echoch and more gone.\nThreshold value 0 - 200"
 
-- alert: "[Relay]Epoch ParaValidator rewards raw"
-  expr: | 
-    (polkadot_pv_eraPoints{chain=~"[[chain]]", account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 85
+- alert: "[Relay]Unapplied slashes for exact validators"
+  expr: |
+    polkadot_staking_slashedValidators{chain=~"[[chain]]", account=~"[[accounts]]"} == 1
+  for: "[[interval]]"
+  labels:
+    uniqueid: 5
+    chat_id: "[[chat_id]]"
+    labels_source: polkadot_staking_slashedValidators
+  annotations:
+    summary: "Validator has been slashed!!!"
+    description: "Validator {{ $labels.account }} has been slashed."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators has been slashed."
+
+- alert: "[Relay]Unapplied slashes count for whole network"
+  expr: |
+    polkadot_staking_slashedValidatorsCount{chain=~"[[chain]]"} > [[threshold]]
   for: "[[interval]]"
   labels:
     uniqueid: 6
     chat_id: "[[chat_id]]"
+    labels_source: polkadot_staking_slashedValidatorsCount
   annotations:
-    summary: "{{ $labels.chain }}: ParaValidator {{ $labels.account }} earns too litle points."
-    description: "ParaValidator {{ $labels.account }} has a problem with blocks producing."
+    summary: "Lots of slashed validators in the network!"
+    description: "Amount of slashed validators {{ $value }}"
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators acts as a paravalidators in current epoch and earning points less then threshhold value and if 85 percents of echoch and more gone.\nThreshold value 0 - 20000 (2.5k - 4k for kusama and 15k - 20k for polka usually."
+    bot_description: "Will shout if amount of slashed validators in excat chain will be more than threshold value."
 
-- alert: "[Relay]Unapplied slashes for validators"
-  expr: |
-    polkadot_staking_unappliedSlashes{chain=~"[[chain]]", account=~"[[accounts]]"} == 1
+- alert: "Test alert - FIRE NOW."
+  expr: vector(1)
   for: "[[interval]]"
   labels:
     uniqueid: 7
     chat_id: "[[chat_id]]"
   annotations:
-    summary: "{{ $labels.account }}: Validator has been slashed."
-    description: "Validator {{ $labels.account }} has been slashed."
-    chain: "{{ $labels.chain }}"
-    account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators has been slashed."
+    summary: "Test alert."
+    description: "Test alert for user with id {{ $labels.chat_id }}"
+    bot_description: "Will shout with no any conditions in interval you set + 30s scrape time + some lag between promtheus and alermanager."
