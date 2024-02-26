@@ -16,7 +16,7 @@ async def sub_menu(query: CallbackQuery):
     message_id = query.message.message_id
     promalert_status = db.get_records('promalert_status', 'id', chat_id)
     
-    text = "We collect and store a set of metrics relevant to the network and even its specific validators performance.\n\n☝️ What is possible for now:\n🔸[Polakdot/Kusama] session/staking data like era points, slashes, active validators and other common network metrics\n🔸[Polakdot/Kusama] PV events like backing of candidates and disputes\n🔸[Polakdot/Kusama] consensus participation(GRANDPA).\n🔸[Acala/Karura] session/staking data like era points, slashes, active validators and other common network metrics.\n🔸[Moonbeam/Moonriver] session/staking data like era points, slashes, active validators and other common network metrics.\n\n☝️ Checkout docs https://github.com/p2p-org/polkadot_monitoring_service/tree/main/docs to learn how we collect metrics and know list of all of them."
+    text = "Subscribe and receive alerts to same chat from bot.\n\n☝️ What is possible for now:\n🔸[Polakdot/Kusama] session/staking data like era points, slashes, active validators and other common network metrics\n🔸[Polakdot/Kusama] PV events like backing of candidates and disputes\n🔸[Polakdot/Kusama] consensus participation(GRANDPA).\n🔸[Acala/Karura] session/staking data like era points, slashes, active validators and other common network metrics.\n🔸[Moonbeam/Moonriver] session/staking data like era points, slashes, active validators and other common network metrics.\n\n☝️ Checkout docs https://github.com/p2p-org/polkadot_monitoring_service/tree/main/docs to learn how we collect metrics and know list of all of them."
     
     menu = MenuBuilder()
       
