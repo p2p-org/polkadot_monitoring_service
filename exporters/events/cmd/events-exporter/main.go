@@ -4,15 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
-	"os/signal"
 	"substrate-events-exporter/internal/monitoring"
-	"syscall"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -37,7 +38,7 @@ func main() {
 	l.Infof("starting events exporter with following config: %s", temp)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	reader, err := NewEventsReader(l, cfg, ctx)
+	reader, err := NewHeadReader(l, cfg, ctx)
 	if err != nil {
 		l.WithError(err).Fatalln("unable to create events reader")
 	}
@@ -52,9 +53,30 @@ func main() {
 			fmt.Fprintf(w, "Ok")
 		}
 	})
-	go http.ListenAndServe(cfg.MetricsListen, nil) //nolint:golint,errcheck
-	go reader.Read(ctx)                            //nolint:golint,errcheck
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	l.Infof("Normal termination, signal %s", <-ch)
+	g, ctx := errgroup.WithContext(ctx)
+	go func() error {
+		listener, err := net.Listen("tcp", cfg.MetricsListen)
+		if err != nil {
+			l.WithError(err).Fatalf("unable to start listening %s", cfg.MetricsListen)
+			return err
+		} else {
+			l.Infof("started listener %s", cfg.MetricsListen)
+		}
+		server := &http.Server{
+			Handler:           http.DefaultServeMux,
+			ReadTimeout:       30 * time.Second,
+			WriteTimeout:      30 * time.Second,
+			ReadHeaderTimeout: 30 * time.Second,
+			IdleTimeout:       30 * time.Second,
+		}
+		return server.Serve(listener)
+	}() //nolint:errcheck
+	g.Go(func() error {
+		return reader.Read(ctx)
+	})
+	if err := g.Wait(); err != nil {
+		l.WithError(err).Fatal("terminated")
+	} else {
+		l.Info("normal exit")
+	}
 }

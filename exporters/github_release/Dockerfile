@@ -14,7 +14,7 @@ RUN pip3 install -r requirements.txt --no-cache-dir
 RUN groupadd -r exporter && useradd -r -g exporter exporter
 
 COPY --from=linter /apps/exporter.py app.py
-COPY --from=linter /apps/functions.py functions.py
+COPY --from=linter /apps/projects.yml projects.yml
 
 USER exporter
 CMD ["python3", "app.py"]

@@ -3,9 +3,15 @@ global:
   scrape_timeout: 10s
 
 rule_files:
- - 'alerts.yml'
+- 'rules/*.yml'
 
 scrape_configs:
+- job_name: github_release_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'github_release_exporter:9150'
+
 - job_name: polkadot_common_exporter
   metrics_path: /metrics
   static_configs:
@@ -41,6 +47,30 @@ scrape_configs:
   static_configs:
   - targets:
     - 'kusama_events_exporter:9150'
+
+- job_name: moonbeam_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'moonbeam_exporter:9150'
+
+- job_name: moonriver_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'moonriver_exporter:9150'
+
+- job_name: acala_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'acala_exporter:9150'
+
+- job_name: karura_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'karura_exporter:9150'
 
 alerting:
   alertmanagers:

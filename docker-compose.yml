@@ -6,17 +6,20 @@ services:
     volumes:
       - ./prometheus/:/etc/prometheus/
       - prometheus_data:/prometheus
+      - prometheus_rules:/etc/prometheus/rules/
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
+    - '--config.file=/etc/prometheus/prometheus.yml'
+    - '--storage.tsdb.path=/prometheus'
+    - '--web.enable-lifecycle'
+    - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+    - '--web.console.templates=/usr/share/prometheus/consoles'
+    
     ports:
-      - 9090:9090
+    - 9090:9090
     networks:
-      - exporters
-      - monitoring
-      - bot
+    - exporters
+    - monitoring
+    - bot
 
   grafana:
     image: grafana/grafana:latest
@@ -51,6 +54,9 @@ services:
       context: ./bot
     env_file:
     - ./bot.env
+    volumes:
+    - ./bot/alerts_tmpl.yml:/app/alerts_tmpl.yml
+    - prometheus_rules:/prometheus_rules
     ports:
     - "8080:8080"
     networks:
@@ -97,14 +103,27 @@ services:
   validators_cache:
     build:
       context: ./validators_cache
+    depends_on:
+    - prometheus
     networks:
     - redis
     - monitoring
     restart: unless-stopped
 
+  github_release_exporter:
+    build:
+      context: ./exporters/github_release
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150"
+    networks:
+    - exporters
+
+
 volumes:
     postgres: {}
     prometheus_data: {}
+    prometheus_rules: {}
     grafana_data: {}
     alertmanager-data: {}
     pgadmin: {}

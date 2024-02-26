@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"substrate-events-exporter/internal/client"
 	"substrate-events-exporter/internal/decoder"
@@ -13,12 +14,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-)
-
-type contextKey string
-
-const (
-	ContextKeyBlockHash = contextKey("hash")
+	"golang.org/x/sync/errgroup"
 )
 
 type Config struct {
@@ -47,7 +43,7 @@ type ValidatorRecord struct {
 	AccountSS58 string `yaml:"account" json:"account"`
 }
 
-type EventsReader struct {
+type HeadReader struct {
 	wsclient              *client.RPCClient
 	decoder               *decoder.Decoder
 	log                   *logrus.Logger
@@ -62,7 +58,7 @@ type EventsReader struct {
 	LastProcessedHeight   uint64
 }
 
-func NewEventsReader(l *logrus.Logger, cfg Config, ctx context.Context) (*EventsReader, error) {
+func NewHeadReader(l *logrus.Logger, cfg Config, ctx context.Context) (*HeadReader, error) {
 	wsclient := client.NewRPCClient(l, cfg.WSUrl)
 	metadataRaw, err := wsclient.StateGetMetadata(ctx)
 	if err != nil {
@@ -73,7 +69,7 @@ func NewEventsReader(l *logrus.Logger, cfg Config, ctx context.Context) (*Events
 		return nil, err
 	}
 
-	r := EventsReader{
+	r := HeadReader{
 		decoder:             decoder,
 		wsclient:            wsclient,
 		LastProcessedHeight: 0,
@@ -88,10 +84,90 @@ func NewEventsReader(l *logrus.Logger, cfg Config, ctx context.Context) (*Events
 	return &r, nil
 }
 
-func (reader *EventsReader) processSingleBlock(ctx context.Context, hash string) error {
+func getMissingValidatorsFrom(groups [][]uint64, votedValidators []uint64) []uint64 {
+	if len(votedValidators) == 0 {
+		return nil
+	}
+	for _, members := range groups {
+		for _, m := range members {
+			// group found
+			if m == votedValidators[0] {
+				res := []uint64{}
+				for _, gm := range members {
+					found := false
+					for _, vv := range votedValidators {
+						if gm == vv {
+							found = true
+						}
+					}
+					if !found {
+						res = append(res, gm)
+					}
+				}
+				return res
+
+			}
+		}
+	}
+	return nil
+}
+func (reader *HeadReader) ProcessBlockParaVotes(ctx context.Context, hash string) error {
+	var r *decoder.StorageRequest
+	r, _ = reader.decoder.NewStorageRequest("paraScheduler", "validatorGroups")
+	validatorGroupsRaw, err := reader.wsclient.StateGetStorage(ctx, r, hash)
+	if err != nil {
+		reader.log.WithError(err).Warn("unable to read storage paraScheduler_validatorGroups")
+		return err
+	}
+	var validatorGroups [][]uint64
+	for _, vg := range dto.MustSlice(r.DecodeResponse(validatorGroupsRaw)) {
+		group := []uint64{}
+		for _, v := range dto.MustSlice(vg) {
+			group = append(group, dto.MustInt(v))
+		}
+		validatorGroups = append(validatorGroups, group)
+	}
+	r, _ = reader.decoder.NewStorageRequest("paraInherent", "onChainVotes")
+	paraVotesRaw, err := reader.wsclient.StateGetStorage(ctx, r, hash)
+	if err != nil {
+		reader.log.WithError(err).Warn("unable to read storage paraInherent_onChainVotes")
+		return err
+	}
+	paraVotes := r.DecodeResponse(paraVotesRaw)
+	if paraVotes == nil {
+		reader.log.WithError(err).Warn("unable to decode storage paraInherent_onChainVotes")
+		return fmt.Errorf("nil response from DecodeResponse()")
+	}
+	psValidators := reader.GetParaSessionValidators(ctx, hash, uint32(dto.MustMap(paraVotes).MustInt("session")))
+	if paraVotes != nil {
+		for _, candidatesVals := range dto.MustMap(paraVotes).GetSlice("backing_validators_per_candidate") {
+			// can be used later for para_id breakdown
+			//paraId := candidatesVals.Get("col1").Get("descriptor").MustInt("para_id")
+			votedValidators := []uint64{}
+			for _, groupVotes := range candidatesVals.GetSlice("col2") {
+				votedValidators = append(votedValidators, groupVotes.MustInt("col1"))
+				// can go deeper and check backable (explicit)/seconded (implicit) statements if need be
+			}
+			missingVotes := getMissingValidatorsFrom(validatorGroups, votedValidators)
+			for _, vv := range votedValidators {
+				if reader.registry == nil || reader.GetValidatorsHostname(psValidators[vv]) != "" {
+					reader.mon.ProcessEvent(MetricBackingVotesExpectedCount, 1, reader.LabelValues(psValidators[vv])...)
+				}
+			}
+			if len(missingVotes) > 0 {
+				for _, mv := range missingVotes {
+					if reader.registry == nil || reader.GetValidatorsHostname(psValidators[mv]) != "" {
+						reader.mon.ProcessEvent(MetricBackingVotesMissedCount, 1, reader.LabelValues(psValidators[mv])...)
+						reader.mon.ProcessEvent(MetricBackingVotesExpectedCount, 1, reader.LabelValues(psValidators[mv])...)
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+func (reader *HeadReader) ProcessBlockEvents(ctx context.Context, hash string) error {
 	r, _ := reader.decoder.NewStorageRequest("system", "events")
-	ctx, cancel := context.WithTimeout(ctx, 120*time.Second)
-	defer cancel()
 	eventsRaw, err := reader.wsclient.StateGetStorage(ctx, r, hash)
 	if err != nil {
 		reader.log.WithError(err).Warn("unable to read storage system_events")
@@ -99,113 +175,147 @@ func (reader *EventsReader) processSingleBlock(ctx context.Context, hash string)
 	}
 	events := reader.decoder.DecodeEvents(ctx, eventsRaw)
 	if events != nil {
-		blockCtx := context.WithValue(ctx, ContextKeyBlockHash, hash)
 		var (
-			dispEvents []dto.Event
+			disputeEvents []dto.Event
 		)
 		for i := 0; i < len(events); i++ {
 			switch {
 			case events[i].Type.ModuleId == "ParasDisputes" && events[i].Type.EventId == "DisputeConcluded":
 				conclustion := events[i].Params.([]interface{})
 				if dto.MustMap(conclustion[1]).MustString("value") == "Valid" {
-					dispEvents = append(dispEvents, events[i])
+					disputeEvents = append(disputeEvents, events[i])
 				}
 			}
-			reader.mon.ProcessEvent(MetricChainEventsCount, 1, reader.LabelValues(events[i].Type.ModuleId, events[i].Type.EventId, "")...)
+			reader.mon.ProcessEvent(MetricChainEventsCount, 1, reader.LabelValues("", events[i].Type.ModuleId, events[i].Type.EventId)...)
 
 		}
-		reader.HandleDisputesConcluded(blockCtx, dispEvents)
-		reader.HandleAllEvents(blockCtx, events)
+		reader.HandleDisputesConcluded(ctx, hash, disputeEvents)
+		reader.HandleAllEvents(ctx, hash, events)
 		reader.EventsProcessed.Add(int64(len(events)))
 	}
 	return nil
 }
 
-func (reader *EventsReader) followHeadHashes(parentCtx context.Context, kind string) (chan string, chan error) {
-	hashes := make(chan string)
-	errs := make(chan error, 1)
-	if kind == "subscription" {
-		go func() {
-			defer close(hashes)
-			defer close(errs)
-			frames, failures := reader.wsclient.ChainSubscribeNewHead(parentCtx)
-			for {
-				select {
-				case f := <-frames:
-					hashes <- dto.MustMap(f.Params).Get("result").MustString("parentHash")
-				case e := <-failures:
-					errs <- e
-					return
-				}
-			}
-		}()
-	} else {
-		ticker := time.NewTicker(15 * time.Second)
-		go func() {
-			defer close(hashes)
-			defer close(errs)
-			for range ticker.C {
-				ctx, cancel := context.WithTimeout(parentCtx, 30*time.Second)
-				header, err := reader.wsclient.ChainGetHeader(ctx, "")
-				cancel()
-				if err != nil {
-					errs <- err
-					return
-				}
-				if reader.LastProcessedHeight == 0 {
-					reader.LastProcessedHeight = header.MustInt("number") - 1
-				}
-				for i := reader.LastProcessedHeight + 1; i <= header.MustInt("number"); i++ {
-					ctx, cancel := context.WithTimeout(parentCtx, 30*time.Second)
-					hash, err := reader.wsclient.ChainGetBlockHash(ctx, i)
-					cancel()
-					if err != nil {
-						errs <- err
-						return
-					}
-					hashes <- hash
-					reader.LastProcessedHeight = i
-				}
-			}
-		}()
+func (reader *HeadReader) subscribeHeadHashes(parentCtx context.Context, hashes chan string) error {
+	frames, failures := reader.wsclient.ChainSubscribeNewHead(parentCtx)
+	for {
+		select {
+		case f := <-frames:
+			hashes <- dto.MustMap(f.Params).Get("result").MustString("parentHash")
+		case e := <-failures:
+			return e
+		case <-parentCtx.Done():
+			return parentCtx.Err()
+		}
 	}
-	return hashes, errs
 }
 
-func (reader *EventsReader) Read(parentctx context.Context) error {
-	ticker := time.NewTicker(time.Minute)
-	reader.EventsRate = 1
-	go func() {
-		counters := [3]int64{0, 0, 0}
-		for range ticker.C {
-			counters[0] = counters[1]
-			counters[1] = counters[2]
-			counters[2] = reader.EventsProcessed.Load()
-			reader.EventsRate = (counters[2] - counters[0]) / 3
-			reader.log.Infof("exporters average events rate %d/min", reader.EventsRate)
-		}
-	}()
-
+func (reader *HeadReader) pollHeadHashes(parentCtx context.Context, hashes chan string) error {
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
 	for {
-		hashes, errs := reader.followHeadHashes(parentctx, reader.cfg.NewHeadBy)
-	nested:
+		ctx, cancel := context.WithTimeout(parentCtx, 60*time.Second)
+		defer cancel()
+		select {
+		case <-ticker.C:
+			header, err := reader.wsclient.ChainGetHeader(ctx, "")
+			if err != nil {
+				return err
+			}
+			if reader.LastProcessedHeight == 0 {
+				reader.LastProcessedHeight = header.MustInt("number") - 1
+			}
+			for i := reader.LastProcessedHeight + 1; i <= header.MustInt("number"); i++ {
+				hash, err := reader.wsclient.ChainGetBlockHash(ctx, i)
+				if err != nil {
+					return err
+				}
+				hashes <- hash
+				reader.LastProcessedHeight = i
+			}
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-parentCtx.Done():
+			return parentCtx.Err()
+		}
+		cancel()
+	}
+}
+
+func (reader *HeadReader) Read(ctx context.Context) error {
+
+	headHashes := make(chan string)
+	defer close(headHashes)
+	g, ctx := errgroup.WithContext(ctx)
+
+	// liveness ticker
+	g.Go(func() error {
+		ticker := time.NewTicker(time.Minute)
+		defer ticker.Stop()
+		reader.EventsRate = 1
+		counters := [3]int64{0, 0, 0}
 		for {
 			select {
-			case h := <-hashes:
-				go reader.processSingleBlock(parentctx, h) //nolint:golint,errcheck
-			case e := <-errs:
-				reader.log.WithError(e).Warn("read loop will be restarted")
-				time.Sleep(3 * time.Second)
-				break nested
-			case <-parentctx.Done():
-				reader.log.Warn("exit")
-				return parentctx.Err()
+			case <-ticker.C:
+				counters[0] = counters[1]
+				counters[1] = counters[2]
+				counters[2] = reader.EventsProcessed.Load()
+				reader.EventsRate = (counters[2] - counters[0]) / 3
+				reader.log.Infof("exporters average events rate %d/min", reader.EventsRate)
+				if reader.EventsRate == 0 {
+					return fmt.Errorf("no new events during tick interval")
+				}
+			case <-ctx.Done():
+				return nil
+			}
+
+		}
+	})
+	// follow head goroutine
+	g.Go(func() error {
+		if reader.cfg.NewHeadBy == "subscription" {
+			if err := reader.subscribeHeadHashes(ctx, headHashes); err != nil {
+				return err
+			} else {
+				return nil
+			}
+		} else {
+			if err := reader.pollHeadHashes(ctx, headHashes); err != nil {
+				return err
+			} else {
+				return nil
 			}
 		}
+	})
+	// handle input hashes
+	g.Go(func() error {
+		for {
+			select {
+			case h := <-headHashes:
+				g.Go(func() error {
+					ctx, cancel := context.WithTimeout(ctx, 120*time.Second)
+					defer cancel()
+					if err := reader.ProcessBlockEvents(ctx, h); err != nil {
+						return err
+					}
+					if err := reader.ProcessBlockParaVotes(ctx, h); err != nil {
+						return err
+					}
+					return nil
+				})
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	})
+	if err := g.Wait(); err != nil {
+		reader.log.WithError(err).Error("process head error")
+		return err
 	}
+	return nil
 }
 
-func (reader *EventsReader) HandleDisputesConcluded(ctx context.Context, events []dto.Event) {
+func (reader *HeadReader) HandleDisputesConcluded(ctx context.Context, hash string, events []dto.Event) {
 	if len(events) == 0 {
 		return
 	}
@@ -214,15 +324,10 @@ func (reader *EventsReader) HandleDisputesConcluded(ctx context.Context, events 
 	for _, e := range events {
 		extrinsicIdxs[e.ExtrinsicIdx] = 1
 	}
-	if ctx.Value(ContextKeyBlockHash) == nil {
-		reader.log.Warn("wrong context")
-		return
-	}
-	blockHash, _ := ctx.Value(ContextKeyBlockHash).(string)
 
-	block, err := reader.wsclient.ChainGetBlock(ctx, blockHash)
+	block, err := reader.wsclient.ChainGetBlock(ctx, hash)
 	if err != nil {
-		reader.log.WithField("block", blockHash).WithError(err).Warn("unable to read block due to transport issues")
+		reader.log.WithField("block", hash).WithError(err).Warn("unable to read block due to transport issues")
 		return
 	}
 
@@ -248,8 +353,8 @@ func (reader *EventsReader) HandleDisputesConcluded(ctx context.Context, events 
 					status := stmt.Get("col1")                // DisputeStatement
 					validatorIdx := int(stmt.MustInt("col2")) // ValidatorIndex
 					if _, ok := status["Invalid"]; ok {
-						accU32 := reader.GetParaSessionValidatorBy(ctx, session, validatorIdx)
-						reader.mon.ProcessEvent(MetricChainEventsByAccountCount, 1, reader.LabelValues("ParasDisputes", "DisputeConcluded", accU32)...)
+						accU32 := reader.GetParaSessionValidatorBy(ctx, hash, session, validatorIdx)
+						reader.mon.ProcessEvent(MetricChainEventsByAccountCount, 1, reader.LabelValues(accU32, "ParasDisputes", "DisputeConcluded")...)
 					}
 				}
 			}
@@ -257,11 +362,11 @@ func (reader *EventsReader) HandleDisputesConcluded(ctx context.Context, events 
 	}
 }
 
-func (reader *EventsReader) HandleAllEvents(ctx context.Context, events []dto.Event) {
+func (reader *HeadReader) HandleAllEvents(ctx context.Context, hash string, events []dto.Event) {
 	if len(events) == 0 {
 		return
 	}
-	accsU32 := reader.GetSessionValidators(ctx, 0)
+	accsU32 := reader.GetSessionValidators(ctx, hash, 0)
 	var accsSS58 []string
 	for i := 0; i < len(accsU32); i++ {
 		accsSS58 = append(accsSS58, reader.decoder.SS58Encode(accsU32[i]))
@@ -272,7 +377,7 @@ func (reader *EventsReader) HandleAllEvents(ctx context.Context, events []dto.Ev
 		if err == nil {
 			for i := 0; i < len(accsSS58); i++ {
 				if strings.Contains(string(raw), accsSS58[i]) || strings.Contains(string(raw), accsU32[i]) {
-					reader.mon.ProcessEvent(MetricChainEventsByAccountCount, 1, reader.LabelValues(e.Type.ModuleId, e.Type.EventId, accsU32[i])...)
+					reader.mon.ProcessEvent(MetricChainEventsByAccountCount, 1, reader.LabelValues(accsU32[i], e.Type.ModuleId, e.Type.EventId)...)
 					break
 				}
 			}
@@ -281,11 +386,10 @@ func (reader *EventsReader) HandleAllEvents(ctx context.Context, events []dto.Ev
 }
 
 // TODO: cleanup
-func (reader *EventsReader) GetParaSessionValidators(ctx context.Context, session uint32) []string {
-	blockHash, _ := ctx.Value(ContextKeyBlockHash).(string)
+func (reader *HeadReader) GetParaSessionValidators(ctx context.Context, hash string, session uint32) []string {
 	if _, ok := reader.paraSessionValidators.Load(session); !ok {
 		req, _ := reader.decoder.NewStorageRequest("paraSessionInfo", "accountKeys", session)
-		resp, err := reader.wsclient.StateGetStorage(ctx, req, blockHash)
+		resp, err := reader.wsclient.StateGetStorage(ctx, req, hash)
 		if err != nil {
 			reader.log.WithError(err).Warn("unable to read parasession validators")
 		}
@@ -304,9 +408,9 @@ func (reader *EventsReader) GetParaSessionValidators(ctx context.Context, sessio
 	return nil
 }
 
-func (reader *EventsReader) GetParaSessionValidatorBy(ctx context.Context, session uint32, idx int) string {
+func (reader *HeadReader) GetParaSessionValidatorBy(ctx context.Context, hash string, session uint32, idx int) string {
 
-	validators := reader.GetParaSessionValidators(ctx, session)
+	validators := reader.GetParaSessionValidators(ctx, hash, session)
 	if idx > len(validators) {
 		return "Unknown"
 	}
@@ -314,8 +418,7 @@ func (reader *EventsReader) GetParaSessionValidatorBy(ctx context.Context, sessi
 }
 
 // TODO: cleanup
-func (reader *EventsReader) GetSessionValidators(ctx context.Context, session uint32) []string {
-	blockHash, _ := ctx.Value(ContextKeyBlockHash).(string)
+func (reader *HeadReader) GetSessionValidators(ctx context.Context, hash string, session uint32) []string {
 	if session == 0 {
 		reader.sessionValidators.Range(func(key, value any) bool {
 			i := key.(uint32)
@@ -327,7 +430,7 @@ func (reader *EventsReader) GetSessionValidators(ctx context.Context, session ui
 	}
 	if _, ok := reader.sessionValidators.Load(session); !ok {
 		req, _ := reader.decoder.NewStorageRequest("session", "validators")
-		resp, err := reader.wsclient.StateGetStorage(ctx, req, blockHash)
+		resp, err := reader.wsclient.StateGetStorage(ctx, req, hash)
 		if err != nil {
 			reader.log.WithError(err).Warn("unable to read session validators", err)
 		}
@@ -346,9 +449,9 @@ func (reader *EventsReader) GetSessionValidators(ctx context.Context, session ui
 	return nil
 }
 
-func (reader *EventsReader) GetSessionValidatorBy(ctx context.Context, session uint32, idx int) string {
+func (reader *HeadReader) GetSessionValidatorBy(ctx context.Context, hash string, session uint32, idx int) string {
 
-	validators := reader.GetSessionValidators(ctx, session)
+	validators := reader.GetSessionValidators(ctx, hash, session)
 	if idx > len(validators) {
 		return "Unknown"
 	}

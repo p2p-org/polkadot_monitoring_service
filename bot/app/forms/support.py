@@ -1,46 +1,31 @@
-from __main__ import router, db, admin_chat
-from utils.db import DB
+from __main__ import bot, router, cache, admin_chat
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import State, StatesGroup
+from callback_data.main import CbData
 from utils.menu_builder import MenuBuilder
 
-assert isinstance(db, DB)
 class Form(StatesGroup):
     support = State()
-    admin_send_msg = State()
 
 @router.message(Form.support)
-async def handle_client_input(message: Message, state: FSMContext) -> None:
-    await state.clear()
-    keyboard = MenuBuilder()
-    keyboard.add(preset='support_reply_start',data=str(message.from_user.id))
-    keyboard.add(preset='support_off',data=str(message.from_user.id))
-    keyboard.add(preset='toggle_ban',data=str(message.from_user.id))
-    username = message.chat.username
-    if message.text:
-        await message.bot.send_message(admin_chat, f'Username: @{username}\nMessage:\n{message.text}\n',
-            reply_markup=keyboard.build().as_markup())
-    elif message.photo:
-        await message.bot.send_photo(admin_chat,message.photo[0].file_id)
-        await message.bot.send_message(admin_chat, f'Username: @{username} + \nCaption:\n{message.caption}\n',
-            reply_markup=keyboard.build().as_markup())
-
-    await message.answer('Please wait for the answer')
-
-@router.message(Form.admin_send_msg)
-async def handle_admin_input(message: Message, state: FSMContext) -> None:
-    keyboard = MenuBuilder()
-    keyboard.add(preset='support_reply_submit', data=str(message.from_user.id))
-    keyboard.add(preset='support_reply_cancel', data=str(message.from_user.id))
+async def find_account(message: Message, state: FSMContext):
     chat_id = message.from_user.id
-    try:
-        d = await state.get_data()
-    except:
-        message.answer("Could not read client chat_id")
-        return
+    message_id = message.message_id
+    username = message.chat.username
 
-    d['response'] = message.text
-    await state.set_data(d)
-    await message.bot.send_message(chat_id, f'Are you sure you want to send following message to {d["client_chat_id"]}?:\n{message.text}',
-        reply_markup=keyboard.build().as_markup())
+    msg = message.text
+
+    old_menu = await state.get_data()
+
+    keyboard = MenuBuilder()
+    keyboard.button(text="⬅️  Back to menu", callback_data=CbData(dst='support_menu', data="", id=0).pack()) + "size=1"
+    keyboard.build()
+
+    text = "Your message been sent to our team.\nWe will contact you if it necessary."
+
+    await message.answer(text, reply_markup=keyboard.as_markup())
+    await state.clear()
+    await bot.send_message(admin_chat, text="User @" + username + " sends message:\n" + str(msg))
+    await bot.delete_message(old_menu['chat_id'], old_menu['message_id'])
+    await bot.delete_message(chat_id, message_id)

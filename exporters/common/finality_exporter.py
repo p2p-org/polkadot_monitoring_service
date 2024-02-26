@@ -34,19 +34,22 @@ app = Flask(__name__)
 @app.route("/metrics")
 def metrics():
     chain = os.environ['CHAIN']
+
     if len(q_metrics) == 0:
         response = make_response("", 200)
         response.mimetype = "text/plain"
+
         return response
+
     metrics = q_metrics[0]
 
     out = ""
 
     try:
-        out += '# HELP polkadot_finality_roundProcessed Blocks processed\n'
-        out += '# TYPE polkadot_finality_roundProcessed counter\n'
+        out += '# HELP polkadot_finality_roundsProcessed Blocks processed\n'
+        out += '# TYPE polkadot_finality_roundsProcessed counter\n'
 
-        out += 'polkadot_finality_roundProcessed{chain="%s"} %s\n' % (chain, metrics['roundProcessed'])
+        out += 'polkadot_finality_roundsProcessed{chain="%s"} %s\n' % (chain, metrics['roundsProcessed'])
 
     except KeyError:
         pass
@@ -114,13 +117,13 @@ def construct_metrics(active_validators, grandpa_keys, votes_threshold, current_
         metrics = {}
         metrics['currentSession'] = current_session
         metrics['validators'] = {k: {'prevotes': 0, 'precommits': 0} for k in grandpa_keys.keys()}
-        metrics['roundProcessed'] = 0
+        metrics['roundsProcessed'] = 0
 
     try:
         if current_session != metrics['currentSession']:
             logging.info('New session ' + str(current_session) + ' has just begun.')
             metrics['validators'] = {k: {'prevotes': 0, 'precommits': 0} for k in grandpa_keys.keys()}
-            metrics['roundProcessed'] = 0
+            metrics['roundsProcessed'] = 0
             metrics['currentSession'] = current_session
     except KeyError:
         pass
@@ -158,10 +161,10 @@ def construct_metrics(active_validators, grandpa_keys, votes_threshold, current_
                             voted_precommits.append(account)
                             params['precommits'] += 1
 
-                    if 'roundProcessed' not in metrics:
-                        metrics['roundProcessed'] = 1
+                    if 'roundsProcessed' not in metrics:
+                        metrics['roundsProcessed'] = 1
                     else:
-                        metrics['roundProcessed'] += 1
+                        metrics['roundsProcessed'] += 1
 
                     logging.info('Round ' + str(k) + ' has processed. Prevotes: ' + str(len(voted_prevotes)) + '. Precommits:  ' + str(len(voted_precommits)))
                     q_rounds_processed.append(k)

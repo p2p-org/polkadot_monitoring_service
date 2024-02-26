@@ -1,29 +1,41 @@
-from __main__ import db, bot, web, web_app, subs
+from __main__ import db, bot, web, web_app
 from aiohttp.web_request import Request
 from aiohttp.web_response import json_response
-from aiogram.types import WebAppInfo
-from aiogram.types import ReplyKeyboardRemove
+from callback_data.main import CbData
+from utils.menu_builder import MenuBuilder
 import logging
-from utils.subscriptions import Alert
+import yaml
 
 
 async def handler(request: Request):
     a = await request.json()
-    alert = Alert(a)
+    print(yaml.dump(a))
 
-    if alert.severity and alert.alertname:
-        ids = db.get_records('id','promalert_status','on')
-        
-        if isinstance(ids, int):
-            ids = [{'id':ids}]
-        for i in ids:
-            if subs.must_notify(i['id'], alert):
-                await bot.send_message(i['id'], '\n'.join([
-                   f'Alert: {alert.alertname}', 
-                   f'Severity: {alert.severity}',
-                   f'Description: {alert.description}']))
+    if isinstance(a, dict) and 'alerts' in a.keys(): 
+        chat_id = int(a['commonLabels']['chat_id'])
+        promalert_status = db.get_records('promalert_status', 'id', chat_id)
 
-    return web.json_response({'status':'ok'}) ## To be reviewed
+        if promalert_status == 'on':
+            if a['status'] == 'firing':
+                text = "‼️ " + a['commonAnnotations']['summary'] + "\n\n🔻 " + a['commonAnnotations']['description']
 
+            elif a['status'] == 'resolved':
+                text = "✅ " + a['commonAnnotations']['summary'] + "\n\n🔹 Resolved"
+            else:
+                text = "❔ " + a['commonAnnotations']['summary'] + "\n\n🔹 Unknown status!!!\n\n" + a['commonAnnotations']['description']
+    
+            keyboard = MenuBuilder()
+            keyboard.button(text="Hide", callback_data=CbData(dst="delete_message", data="", id=0).pack()) + "size=1"
+            keyboard.build()
+
+            
+            await bot.send_message(chat_id, text, reply_markup=keyboard.as_markup())
+
+            return web.Response(status=200)
+        else:
+            return web.Response(status=401)
+    else:
+        return web.Response(status=500) 
+    
 def register_app():
     web_app.add_routes([web.post('/prom_alert', handler)])
