@@ -17,4 +17,5 @@ jobs:
       with:
         promtool_actions_subcommand: 'config'
         promtool_actions_files: 'prometheus/prometheus.yml'
+        promtool_actions_version: 2.50.0
         promtool_actions_comment: true
