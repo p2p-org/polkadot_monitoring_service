@@ -17,12 +17,12 @@ async def handler(request: Request):
 
         if promalert_status == 'on':
             if a['status'] == 'firing':
-                text = "‼️ " + a['commonAnnotations']['summary'] + "\n\n🔻 " + a['commonAnnotations']['description']
+                text = "🆘 <b>THE ROOF IS ON FIRE</b> 🔥🔥🔥\n\n" + a['commonAnnotations']['summary'] + "\n\n🔻 " + a['commonAnnotations']['description']
 
             elif a['status'] == 'resolved':
-                text = "✅ " + a['commonAnnotations']['summary'] + "\n\n🔹 Resolved"
+                text = "✅ RESOLVED 🌞🌞🌞\n\n" + a['commonAnnotations']['summary'] + "\n\n🔹 " + a['commonAnnotations']['description'] 
             else:
-                text = "❔ " + a['commonAnnotations']['summary'] + "\n\n🔹 Unknown status!!!\n\n" + a['commonAnnotations']['description']
+                text = "❔ UNKNOWN STATUS\n\n" + a['commonAnnotations']['summary'] + "\n\n🔹 " + a['commonAnnotations']['description']
     
             keyboard = MenuBuilder()
             keyboard.button(text="Hide", callback_data=CbData(dst="delete_message", data="", id=0).pack()) + "size=1"

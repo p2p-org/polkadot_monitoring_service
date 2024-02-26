@@ -251,7 +251,10 @@ async def sub_set_labels(query: CallbackQuery, state: FSMContext):
         else:
             try:
                 if label_value:
-                    d['check_list'][label_name]['data'].append(label_value)
+                    if label_value.startswith('-'):
+                        d['check_list'][label_name]['data'].remove(label_value[1:])
+                    else:
+                        d['check_list'][label_name]['data'].append(label_value)
             except AttributeError:
                 d['check_list'][label_name]['data'] = [label_value]
                 d['check_list'][label_name]['emoji'] = '✅ '
@@ -270,7 +273,7 @@ async def sub_set_labels(query: CallbackQuery, state: FSMContext):
     if isinstance(label_values, list) and len(label_values) > 0:
         for label in label_values:
             if label in d['check_list'][label_name]['data']:
-                menu.button(text='🟢 ' + label, callback_data=CbData(dst="sub_set_labels", data="reset", id=uniqueid).pack()) + "size=1"
+                menu.button(text='🟢 ' + label, callback_data=CbData(dst="sub_set_labels", data="."+label_name + ',-' + label, id=uniqueid).pack()) + "size=1"
             else:
                 menu.button(text=label, callback_data=CbData(dst="sub_set_labels", data="."+label_name + ',' + label, id=uniqueid).pack()) + "size=1"
     
