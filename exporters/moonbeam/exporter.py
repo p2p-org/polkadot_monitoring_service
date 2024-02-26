@@ -37,10 +37,11 @@ def metrics():
         pass
 
     try:
-        out += '# HELP moonbeam_activeCollatorsCount Active collators\n'
-        out += '# TYPE moonbeam_activeCollatorsCount counter\n'
+        out += '# HELP moonbeam_activeCollators Active collators\n'
+        out += '# TYPE moonbeam_activeCollators counter\n'
 
-        out += 'moonbeam_activeCollatorsCount{chain="%s"} %s\n' % (chain, metrics['common']['active_collators'])
+        for k, v in metrics['active_collators'].items():
+            out += 'moonbeam_activeCollators{chain="%s", account="%s"} %s\n' % (chain, k, v)
     except KeyError:
         pass
 
@@ -122,12 +123,14 @@ def main():
             if current_rnd != rnd:
                 active_collators = substrate_interface.request('ParachainStaking', 'SelectedCandidates').value
                 common = {}
-                common['active_collators'] = len(active_collators)
                 common['current_round'] = current_rnd
                 common['rnd_blocks'] = 0
                 authored_blocks_count = 0
                 all_collators = {k: authored_blocks_count for k in active_collators}
+
                 result = {'collators': all_collators, 'common': common}
+                result['active_collators'] = {k: 1 for k in active_collators}
+
                 logging.info('New round ' + str(current_rnd) + ' has just begun')
 
             last_block = substrate_interface.request('System', 'Number').value

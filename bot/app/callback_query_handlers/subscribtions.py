@@ -16,8 +16,8 @@ async def sub_menu(query: CallbackQuery):
     message_id = query.message.message_id
     promalert_status = db.get_records('promalert_status', 'id', chat_id)
     
-    text = "Here is a main subscriptions menu.\n\nSubscribe and track neccesary events in network.\n\n"
-
+    text = "We collect and store a set of metrics relevant to the network and even its specific validators performance.\n\n☝️ What is possible for now:\n🔸[Polakdot/Kusama] session/staking data like era points, slashes, active validators and other common network metrics\n🔸[Polakdot/Kusama] PV events like backing of candidates and disputes\n🔸[Polakdot/Kusama] consensus participation(GRANDPA).\n🔸[Acala/Karura] session/staking data like era points, slashes, active validators and other common network metrics.\n🔸[Moonbeam/Moonriver] session/staking data like era points, slashes, active validators and other common network metrics.\n\n☝️ Checkout docs https://github.com/p2p-org/polkadot_monitoring_service/tree/main/docs to learn how we collect metrics and know list of all of them."
+    
     menu = MenuBuilder()
       
     menu.button(text='📨 My Subscribtions', callback_data=CbData(dst="sub_manage", data="", id=0).pack()) + "size=1"
@@ -86,12 +86,11 @@ async def sub_manage(query: CallbackQuery, state: FSMContext):
                     menu.button(text="⁉️  " + template['alert'], callback_data=CbData(dst='sub_view', data="", id=uniqueid)) + "size=1"
 
 
-    menu.button(text="⬅️  Back", callback_data=CbData(dst="sub_menu", data="", id=0).pack()) + "size=2"
-    menu.button(text="🧠 Learn", callback_data=CbData(dst="support_subscribtions", data="", id=0).pack()) + "size=2"
+    menu.button(text="⬅️  Back", callback_data=CbData(dst="sub_menu", data="", id=0).pack()) + "size=1"
     menu.build()
 
     try:
-        await query.message.edit_text(text="Here you can choose all necessary subscbtions for you.\n\n☝️ For now we cover:\nPolkadot/Kusama and some parachains like Moonbeam/Moonriver and Acala/Karura.\n\n👍 We appriciate any contributions to alert expressions list.\nFor more info click <b>Learn</b>", reply_markup=menu.as_markup())
+        await query.message.edit_text(text="Here you can subscribe to all the necessary events on the network and more.\n\n☝️ Every subscription represents prometheus alert rule - possbile to customize it easily.\nFollow github docs https://github.com/p2p-org/polkadot_monitoring_service/tree/main/docs to learn how it works inside of the box(no code interventions needed).\n\nEmoji explanations:\n➕ - Add subsbtion\n⏳ - Waiting for activation\n🟢 - Subscribtion is active\n⁉️  - Subscribtion added but activation failed by some reasons(Contact US)\n🔥 - Alert expecting\n🔥🔥🔥 - FIRE!!! You will receive an alert soon", reply_markup=menu.as_markup())
     except TelegramBadRequest:
         pass
 
@@ -126,7 +125,7 @@ async def sub_view(query: CallbackQuery):
 
         state = rule['state']
     
-    text = '🔹 ' + template['alert'] + '\n\n' + '🔻 ' + template['annotations']['bot_description'] + '\n\n' + 'Labels:\n' + labels + '\n\n' + 'State: <b>' + state + '</b>' 
+    text = '🔹 ' + template['alert'] + '\n\n' + '🔻 ' + template['annotations']['bot_description'] + '\n' + 'Labels:\n' + labels + '\n\n' + 'State: <b>' + state + '</b>' 
 
     menu = MenuBuilder()
 

@@ -27,7 +27,7 @@ async def check_if_blocked(handler: Callable[[Update, Dict[str, Any]], Awaitable
 
     if account_status == 'off':
         if event.event_type == 'message':
-            await event.message.answer("Your account has been disabled 🤷\nSorry and have a good day.")
+            await event.message.answer("Your account has been disabled.")
             CancelHandler()
         elif event.event_type == 'callback_query':
             await event.callback_query.answer('Your account has been disabled.')
