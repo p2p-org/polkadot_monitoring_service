@@ -90,7 +90,7 @@ async def sub_manage(query: CallbackQuery, state: FSMContext):
     menu.build()
 
     try:
-        await query.message.edit_text(text="Here you can subscribe to all the necessary events on the network and more.\n\n☝️ Every subscription represents prometheus alert rule - possbile to customize it easily.\nFollow github docs https://github.com/p2p-org/polkadot_monitoring_service/tree/main/docs to learn how it works inside of the box(no code interventions needed).\n\nEmoji explanations:\n➕ - Add subsbtion\n⏳ - Waiting for activation\n🟢 - Subscribtion is active\n⁉️  - Subscribtion added but activation failed by some reasons(Contact US)\n🔥 - Alert expecting\n🔥🔥🔥 - FIRE!!! You will receive an alert soon", reply_markup=menu.as_markup())
+        await query.message.edit_text(text="Here you can subscribe to all the necessary events on the network and more.\n\n☝️ Every subscription represents prometheus alert rule - possbile to customize it easily.\nFollow github docs https://github.com/p2p-org/polkadot_monitoring_service/tree/main/docs to learn how it works inside of the box(no code interventions needed).\n\nEmoji explanations:\n➕ - Set alert\n⏳ - Waiting for activation\n🟢 - Alert is ready\n⁉️  - Alert added but activation failed by some reasons(Contact US)\n🔥 - Alert expecting\n🔥🔥🔥 - FIRE!!! You will receive an alert soon", reply_markup=menu.as_markup())
     except TelegramBadRequest:
         pass
 
