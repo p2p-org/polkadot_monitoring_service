@@ -1,7 +1,8 @@
 from __main__ import router,bot
 from aiogram.types import Message
 from aiogram import F
-from forms.accounts import Form 
+from forms.accounts import Form
+from forms.support import Form
 from callback_query_handlers.main_menu import main_menu
 
 @router.message(F.text == '/start')
@@ -18,4 +19,7 @@ async def command_start(message: Message) -> None:
     message_id = message.message_id
     
     if Form.validators:
+        await bot.delete_message(chat_id,message_id)
+
+    if Form.support:
         await bot.delete_message(chat_id,message_id)

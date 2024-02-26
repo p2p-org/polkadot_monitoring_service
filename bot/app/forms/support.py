@@ -24,7 +24,7 @@ async def find_account(message: Message, state: FSMContext):
 
     text = "Your message been sent to our team.\nWe will contact you if it necessary."
 
-    await message.answer(text, reply_markup=menu.as_markup())
+    await message.answer(text, reply_markup=keyboard.as_markup())
     await state.clear()
     await bot.send_message(admin_chat, text="User @" + username + " sends message:\n" + str(msg))
     await bot.delete_message(old_menu['chat_id'], old_menu['message_id'])
