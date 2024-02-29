@@ -1,7 +1,7 @@
 rules:
 - alert: "Latest releases on github"
   expr: |
-    github_latest_release_seconds{project=~"[[project]]"} < [[threshold]]
+    github_latest_release_seconds{project=~"[[project]]"} < 7200
   for: "[[interval]]"
   labels:
     uniqueid: 1
@@ -10,10 +10,10 @@ rules:
   annotations:
     summary: "{{ $labels.project }}: Has been released recently."
     description: "New version for {{ $labels.project }} has been released recently."
-    bot_description: "Will shout if some of monitored project been release LESS than threshold value in seconds ago."
+    bot_description: "Will shout if some of monitored project is not older than 7200sec(2hrs)\nFor standalone version of the bot possible to monitor any github projects whick make releases(See documentation)."
 
 
-- alert: "[Polkadot] Earned points by end of era"
+- alert: "[Polkadot] Reward points by end of era"
   expr: |
     polkadot_staking_eraPoints{chain=~"[[chain]]", account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_staking_eraProgress >= 95
   for: "[[interval]]"
@@ -26,10 +26,10 @@ rules:
     description: "Validator {{ $labels.account }} earned {{ $value }} points by end of era."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators earned eraPoints less than threshold you selected by end of era.\nThreshold values 0 - 20000(depends of network)"
+    bot_description: "Will shout if some of selected validators earned era points less than threshold you selected by end of era.\nThreshold value - amount of reward points from 0 to 20000(depends of network)"
 
 
-- alert: "[Polkadot] Earned points for ParaValidator by end of epoch"
+- alert: "[Polkadot] PV Reward points by end of epoch"
   expr: |
     polkadot_pv_eraPoints{chain=~"[[chain]]", account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 85
   for: "[[interval]]"
@@ -42,7 +42,7 @@ rules:
     description: "ParaValidator {{ $labels.account }} earned {{ $value }} points by end of epoch."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators been as a ParaValidator and earned epoch points less than threshold you selected by end of epoch.\nThreshold values 0 - 10000(depends of network)"
+    bot_description: "Will shout if some of selected validators been as a ParaValidator and earned epoch points less than threshold you selected by end of epoch.\nThreshold value - amount of reward points from 0 to 10000(depends of network)"
 
 
 - alert: "[Polkadot] Offline validators"
@@ -54,7 +54,7 @@ rules:
     chat_id: "[[chat_id]]"
     labels_source: polkadot_session_validators
   annotations:
-    summary: "{{ $labels.chain }}: Validator become inactive!"
+    summary: "{{ $labels.chain }}: Validator become to inactive state!"
     description: "Validator {{ $labels.account }} is inactive now!"
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
@@ -70,14 +70,14 @@ rules:
     chat_id: "[[chat_id]]"
     labels_source: polkadot_finality_precommits
   annotations:
-    summary: "{{ $labels.chain }}: Validator has problem with block finality(precommits)!!!"
+    summary: "{{ $labels.chain }}: Validator has problem with block finality participation!!!"
     description: "Validator {{ $labels.account }} participate in finality for {{ $value }} percent."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators acts bellow threshold value as a consensus member(Precommits).\nThreshold values 0 - 100"
+    bot_description: "Will shout if some of selected validators acts bellow threshold value as a consensus member(Precommits).\nThreshold value - percent of grandpa rounds when validator participated in consensus(0-100)"
 
 
-- alert: "[Polkadot] PV candidates backing by validator"
+- alert: "[Polkadot] PV Candidates backing"
   expr: |
     (increase(polkadot_pv_backing_votes_missed{chain=~"[[chain]]",account=~"[[accounts]]"}[10m])) / on (account) group_left() (increase(polkadot_pv_backing_votes_expected[10m]) * 100) > [[threshold]]
   for: "[[interval]]"
@@ -90,10 +90,10 @@ rules:
     description: "ParaValidator {{ $labels.account }} has skipped {{ $value }} percents of candidates."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators having lots of missed candidates backing.\nThreshold value 0 - 100"
+    bot_description: "Will shout if some of selected validators having lots of missed candidates backing.\nThreshold value - percent of missed backing votes(0-100)"
 
 
-- alert: "[Polkadot] Unapplied slashes for exact validators"
+- alert: "[Polkadot] Unapplied slashes"
   expr: |
     polkadot_staking_slashedValidators{chain=~"[[chain]]", account=~"[[accounts]]"} == 1
   for: "[[interval]]"
@@ -106,10 +106,10 @@ rules:
     description: "Validator {{ $labels.account }} has been slashed."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators has been slashed."
+    bot_description: "Will shout if some of selected validators has been slashed.\nData from storage - possible also to catch it from events."
 
 
-- alert: "[Polkadot] Unapplied slashes count for whole network"
+- alert: "[Polkadot] Unapplied slashes in a whole network"
   expr: |
     polkadot_staking_slashedValidatorsCount{chain=~"[[chain]]"} > [[threshold]]
   for: "[[interval]]"
@@ -122,7 +122,7 @@ rules:
     description: "Amount of slashed validators {{ $value }}"
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if amount of slashed validators in excat chain will be more than threshold value."
+    bot_description: "Will shout if amount of slashed validators in network will reach or more than threshold value.\nThreshold value - amount of validators."
 
 
 - alert: "[Acala] Offline collators"
@@ -134,14 +134,14 @@ rules:
     chat_id: "[[chat_id]]"
     labels_source: acala_session_active_validators
   annotations:
-    summary: "{{ $labels.chain }}: Collator become inactive!"
+    summary: "{{ $labels.chain }}: Collator become to inactive state!"
     description: "Collator {{ $labels.account }} is inactive now!"
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
     bot_description: "Will shout if some of selected collators been an active and become to inactive."
 
 
-- alert: "[Moonbeam] Blocks authored by collator by end of round"
+- alert: "[Moonbeam] Blocks authored by end of round"
   expr: |
     moonbeam_blockAuthorship{chain=~"[[chain]]", account=~"[[accounts]]"} < [[threshold]] and on(account) moonbeam_activeCollators == 1 and on (chain) moonbeam_roundProgress >= 90
   for: "[[interval]]"
@@ -154,7 +154,7 @@ rules:
     description: "Collator {{ $labels.account }} authored {{ $value }} blocks by end of round."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected collators authored blocks less than threshold you selected by end of round.\nThreshold values 0 - 300(depends of network)"
+    bot_description: "Will shout if some of selected collators authored blocks less than threshold you selected by end of round.\nThreshold value - amount of blocks"
 
 
 - alert: "[Moonbeam] Offline collators"
@@ -166,7 +166,7 @@ rules:
     chat_id: "[[chat_id]]"
     labels_source: moonbeam_activeCollators
   annotations:
-    summary: "{{ $labels.chain }}: Collator become inactive!"
+    summary: "{{ $labels.chain }}: Collator become to inactive state!"
     description: "Collator {{ $labels.account }} is inactive now!"
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
@@ -180,6 +180,6 @@ rules:
     uniqueid: 12
     chat_id: "[[chat_id]]"
   annotations:
-    summary: "Test alert!"
-    description: "Test alert."
+    summary: "This is a summary of test alert."
+    description: "Description - here is more detailed data about alert."
     bot_description: "Will shout with no any conditions in interval you set + 30s scrape time + some lag between promtheus and alermanager."
