@@ -40,7 +40,7 @@ class Alerts():
 
         try:
             for group in self.content['data']['groups']:
-                if int(group['name']) == self.chat_id:
+                if group['name'].isnumeric() and int(group['name']) == self.chat_id:
                     for rule in group['rules']:
                         if int(rule['labels']['uniqueid']) == uniqueid:
                             return rule
