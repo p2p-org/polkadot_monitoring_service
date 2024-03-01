@@ -119,7 +119,6 @@ services:
     networks:
     - exporters
 
-
 volumes:
     postgres: {}
     prometheus_data: {}

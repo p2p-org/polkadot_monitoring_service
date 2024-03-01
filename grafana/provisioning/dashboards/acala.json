@@ -24,6 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 7,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -165,7 +166,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "moonbeam_activeCollators{chain=\"$chain\", account=~\"$account\"}",
+          "expr": "acala_session_active_validators{chain=\"$chain\",account=~\"$account\"}",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -227,12 +228,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 5,
         "w": 6,
         "x": 18,
         "y": 0
       },
-      "id": 9,
+      "id": 16,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -257,13 +258,13 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "moonbeam_currentRound{chain=\"$chain\"}",
-          "legendFormat": "__auto",
+          "expr": "acala_session_common{chain=\"$chain\", account=~\"$account\", name=\"current_session\"}",
+          "legendFormat": "{{ account }}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Current round",
+      "title": "Current Session",
       "type": "stat"
     },
     {
@@ -283,10 +284,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
@@ -295,12 +292,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 2,
+        "h": 5,
         "w": 6,
         "x": 18,
-        "y": 4
+        "y": 5
       },
-      "id": 12,
+      "id": 17,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -325,149 +322,13 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "max_over_time(moonbeam_blocksMedian{chain=\"$chain\"}[1m])",
+          "expr": "acala_session_common{chain=\"$chain\",name=\"active_validators_count\"}",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Median blocks",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 6,
-        "x": 18,
-        "y": 6
-      },
-      "id": 11,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "max_over_time(moonbeam_blocksP95{chain=\"$chain\"}[1m])",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "P95 blocks",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 6,
-        "x": 18,
-        "y": 8
-      },
-      "id": 13,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "max_over_time(moonbeam_blocksAvg{chain=\"$chain\"}[1m])",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "AVG blocks",
+      "title": "Active set collators count",
       "type": "stat"
     },
     {
@@ -527,6 +388,42 @@
                 "value": 273
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "chain"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 173
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "account"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 836
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 141
+              }
+            ]
           }
         ]
       },
@@ -549,12 +446,7 @@
         },
         "frameIndex": 1,
         "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "node"
-          }
-        ]
+        "sortBy": []
       },
       "pluginVersion": "10.3.3",
       "targets": [
@@ -565,7 +457,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "moonbeam_blockAuthorship{chain=\"$chain\", account=~\"$account\"}",
+          "expr": "acala_rewards_validator{chain=\"$chain\", account=~\"$account\"}",
           "format": "table",
           "instant": true,
           "legendFormat": "{{ account }}",
@@ -620,200 +512,6 @@
         }
       ],
       "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 18
-      },
-      "id": 4,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "moonbeam_blockAuthorship{chain=\"$chain\"}\n",
-          "interval": "",
-          "legendFormat": "{{ account }}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Moonbeam block authorship",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 27
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "moonbeam_roundBlocks{chain=\"$chain\"}",
-          "interval": "",
-          "legendFormat": "{{ account }}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Round blocks",
-      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -823,9 +521,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "moonbeam",
-          "value": "moonbeam"
+          "selected": true,
+          "text": "acala",
+          "value": "acala"
         },
         "hide": 0,
         "includeAll": false,
@@ -834,23 +532,23 @@
         "options": [
           {
             "selected": true,
-            "text": "moonbeam",
-            "value": "moonbeam"
+            "text": "acala",
+            "value": "acala"
           },
           {
             "selected": false,
-            "text": "moonriver",
-            "value": "moonriver"
+            "text": "karura",
+            "value": "karura"
           }
         ],
-        "query": "moonbeam,moonriver",
+        "query": "acala,karura",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "15m",
           "value": "15m"
         },
@@ -936,8 +634,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Moonbeam/Moonriver",
-  "uid": "UEQXXV4Vk",
-  "version": 2,
+  "title": "Acala/Karura",
+  "uid": "db101c88-3457-4ded-9882-63b0873b5ae8",
+  "version": 4,
   "weekStart": ""
 }
