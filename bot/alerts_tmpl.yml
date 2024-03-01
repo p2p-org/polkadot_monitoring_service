@@ -15,7 +15,7 @@ rules:
 
 - alert: "[Polkadot] Reward points by end of era"
   expr: |
-    polkadot_staking_eraPoints{chain=~"[[chain]]", account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_staking_eraProgress >= 95
+    polkadot_staking_eraPoints{chain="polkadot", account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_staking_eraProgress >= 95
   for: "[[interval]]"
   labels:
     uniqueid: 2
@@ -26,15 +26,29 @@ rules:
     description: "Validator {{ $labels.account }} earned {{ $value }} points by end of era."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators earned era points less than threshold you selected by end of era.\nThreshold value - amount of reward points from 0 to 20000(depends of network)"
+    bot_description: "Will shout if some of selected validators earned era points less than threshold you selected by end of era.\nThreshold value - amount of reward points from 0 to 20000"
 
-
-- alert: "[Polkadot] PV Reward points by end of epoch"
+- alert: "[Kusama] Reward points by end of era"
   expr: |
-    polkadot_pv_eraPoints{chain=~"[[chain]]", account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 85
+    polkadot_staking_eraPoints{chain="kusama", account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_staking_eraProgress >= 95
   for: "[[interval]]"
   labels:
     uniqueid: 3
+    chat_id: "[[chat_id]]"
+    labels_source: polkadot_staking_eraPoints
+  annotations:
+    summary: "{{ $labels.chain }}: Validator has earned points less than choosen."
+    description: "Validator {{ $labels.account }} earned {{ $value }} points by end of era."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators earned era points less than threshold you selected by end of era.\nThreshold value - amount of reward points from 0 to 20000"
+
+- alert: "[Polkadot] PV Reward points by end of epoch"
+  expr: |
+    polkadot_pv_eraPoints{chain="polkadot", account=~"[[accounts]]"} < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 85
+  for: "[[interval]]"
+  labels:
+    uniqueid: 4
     chat_id: "[[chat_id]]"
     labels_source: polkadot_pv_eraPoints
   annotations:
@@ -42,15 +56,29 @@ rules:
     description: "ParaValidator {{ $labels.account }} earned {{ $value }} points by end of epoch."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators been as a ParaValidator and earned epoch points less than threshold you selected by end of epoch.\nThreshold value - amount of reward points from 0 to 10000(depends of network)"
+    bot_description: "Will shout if some of selected validators been as a ParaValidator and earned epoch points less than threshold you selected by end of epoch.\nThreshold value - amount of reward points from 0 to 10000"
 
+- alert: "[Kusama] PV Reward points by end of epoch"
+  expr: |
+    polkadot_pv_eraPoints{chain="kusama", account="kusama"} < [[threshold]] and on(account) polkadot_session_paraValidators == 1 and on (chain) polkadot_session_sessionProgress >= 85
+  for: "[[interval]]"
+  labels:
+    uniqueid: 5
+    chat_id: "[[chat_id]]"
+    labels_source: polkadot_pv_eraPoints
+  annotations:
+    summary: "{{ $labels.chain }}: ParaValidator has earned points less than choosen."
+    description: "ParaValidator {{ $labels.account }} earned {{ $value }} points by end of epoch."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators been as a ParaValidator and earned epoch points less than threshold you selected by end of epoch.\nThreshold value - amount of reward points from 0 to 10000"      
 
 - alert: "[Polkadot] Offline validators"
   expr: |
-    rate(polkadot_session_validators{chain=~"[[chain]]", account=~"[[accounts]]"}[30m]) > 0
+    rate(polkadot_session_validators{chain="polkadot", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
-    uniqueid: 4
+    uniqueid: 6
     chat_id: "[[chat_id]]"
     labels_source: polkadot_session_validators
   annotations:
@@ -60,13 +88,27 @@ rules:
     account: "{{ $labels.account }}"
     bot_description: "Will shout if some of selected validators been an active validator and become to inactive in new era."
 
+- alert: "[Kusama] Offline validators"
+  expr: |
+    rate(polkadot_session_validators{chain="kusama", account=~"[[accounts]]"}[30m]) > 0
+  for: "[[interval]]"
+  labels:
+    uniqueid: 7
+    chat_id: "[[chat_id]]"
+    labels_source: polkadot_session_validators
+  annotations:
+    summary: "{{ $labels.chain }}: Validator become to inactive state!"
+    description: "Validator {{ $labels.account }} is inactive now!"
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators been an active validator and become to inactive in new era."
 
 - alert: "[Polkadot] Finality GRANDPA precommits ratio"
   expr: | 
-    (polkadot_finality_precommits{chain=~"[[chain]]", account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
+    (polkadot_finality_precommits{chain="polkadot", account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
   for: "[[interval]]"
   labels:
-    uniqueid: 5
+    uniqueid: 8
     chat_id: "[[chat_id]]"
     labels_source: polkadot_finality_precommits
   annotations:
@@ -76,13 +118,27 @@ rules:
     account: "{{ $labels.account }}"
     bot_description: "Will shout if some of selected validators acts bellow threshold value as a consensus member(Precommits).\nThreshold value - percent of grandpa rounds when validator participated in consensus(0-100)"
 
+- alert: "[Kusama] Finality GRANDPA precommits ratio"
+  expr: |
+    (polkadot_finality_precommits{chain="kusama", account=~"[[accounts]]"} / on (chain) group_left() polkadot_finality_roundsProcessed * 100) < [[threshold]] and on(account) polkadot_session_validators == 1 and on (chain) polkadot_session_sessionProgress >= 3
+  for: "[[interval]]"
+  labels:
+    uniqueid: 9
+    chat_id: "[[chat_id]]"
+    labels_source: polkadot_finality_precommits
+  annotations:
+    summary: "{{ $labels.chain }}: Validator has problem with block finality participation!!!"
+    description: "Validator {{ $labels.account }} participate in finality for {{ $value }} percent."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators acts bellow threshold value as a consensus member(Precommits).\nThreshold value - percent of grandpa rounds when validator participated in consensus(0-100)"      
 
 - alert: "[Polkadot] PV Candidates backing"
   expr: |
-    (increase(polkadot_pv_backing_votes_missed{chain=~"[[chain]]",account=~"[[accounts]]"}[10m])) / on (account) group_left() (increase(polkadot_pv_backing_votes_expected[10m]) * 100) > [[threshold]]
+    (increase(polkadot_pv_backing_votes_missed{chain="polkadot",account=~"[[accounts]]"}[10m])) / on (account) group_left() (increase(polkadot_pv_backing_votes_expected[10m]) * 100) > [[threshold]]
   for: "[[interval]]"
   labels:
-    uniqueid: 6
+    uniqueid: 10
     chat_id: "[[chat_id]]"
     labels_source: polkadot_pv_backing_votes_missed
   annotations:
@@ -92,13 +148,27 @@ rules:
     account: "{{ $labels.account }}"
     bot_description: "Will shout if some of selected validators having lots of missed candidates backing.\nThreshold value - percent of missed backing votes(0-100)"
 
+- alert: "[Kusama] PV Candidates backing"
+  expr: |
+    (increase(polkadot_pv_backing_votes_missed{chain="kusama",account=~"[[accounts]]"}[10m])) / on (account) group_left() (increase(polkadot_pv_backing_votes_expected[10m]) * 100) > [[threshold]]
+  for: "[[interval]]"
+  labels:
+    uniqueid: 11
+    chat_id: "[[chat_id]]"
+    labels_source: polkadot_pv_backing_votes_missed
+  annotations:
+    summary: "{{ $labels.chain }}: ParaValidator has very little of backed candidates!!!"
+    description: "ParaValidator {{ $labels.account }} has skipped {{ $value }} percents of candidates."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators having lots of missed candidates backing.\nThreshold value - percent of missed backing votes(0-100)"
 
 - alert: "[Polkadot] Unapplied slashes"
   expr: |
-    polkadot_staking_slashedValidators{chain=~"[[chain]]", account=~"[[accounts]]"} == 1
+    polkadot_staking_slashedValidators{chain="polkadot", account=~"[[accounts]]"} == 1
   for: "[[interval]]"
   labels:
-    uniqueid: 7
+    uniqueid: 12
     chat_id: "[[chat_id]]"
     labels_source: polkadot_staking_slashedValidators
   annotations:
@@ -108,13 +178,27 @@ rules:
     account: "{{ $labels.account }}"
     bot_description: "Will shout if some of selected validators has been slashed.\nData from storage - possible also to catch it from events."
 
+- alert: "[Kusama] Unapplied slashes"
+  expr: |
+    polkadot_staking_slashedValidators{chain="kusama", account=~"[[accounts]]"} == 1
+  for: "[[interval]]"
+  labels:
+    uniqueid: 13
+    chat_id: "[[chat_id]]"
+    labels_source: polkadot_staking_slashedValidators
+  annotations:
+    summary: "{{ $labels.chain }}: Validator has been slashed!!!"
+    description: "Validator {{ $labels.account }} has been slashed."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators has been slashed.\nData from storage - possible also to catch it from events."
 
 - alert: "[Polkadot] Unapplied slashes in a whole network"
   expr: |
-    polkadot_staking_slashedValidatorsCount{chain=~"[[chain]]"} > [[threshold]]
+    polkadot_staking_slashedValidatorsCount{chain="polkadot"} > [[threshold]]
   for: "[[interval]]"
   labels:
-    uniqueid: 8
+    uniqueid: 14
     chat_id: "[[chat_id]]"
     labels_source: polkadot_staking_slashedValidatorsCount
   annotations:
@@ -124,13 +208,42 @@ rules:
     account: "{{ $labels.account }}"
     bot_description: "Will shout if amount of slashed validators in network will reach or more than threshold value.\nThreshold value - amount of validators."
 
+- alert: "[Kusama] Unapplied slashes in a whole network"
+  expr: |
+    polkadot_staking_slashedValidatorsCount{chain="kusama"} > [[threshold]]
+  for: "[[interval]]"
+  labels:
+    uniqueid: 15
+    chat_id: "[[chat_id]]"
+    labels_source: polkadot_staking_slashedValidatorsCount
+  annotations:
+    summary: "{{ $labels.chain }}: Lots of slashed validators in the network!"
+    description: "Amount of slashed validators {{ $value }}"
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if amount of slashed validators in network will reach or more than threshold value.\nThreshold value - amount of validators."      
 
 - alert: "[Acala] Offline collators"
   expr: |
-    rate(acala_session_active_validators{chain=~"[[chain]]", account=~"[[accounts]]"}[30m]) > 0
+    rate(acala_session_active_validators{chain="acala", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
-    uniqueid: 9
+    uniqueid: 16
+    chat_id: "[[chat_id]]"
+    labels_source: acala_session_active_validators
+  annotations:
+    summary: "{{ $labels.chain }}: Collator become to inactive state!"
+    description: "Collator {{ $labels.account }} is inactive now!"
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected collators been an active and become to inactive."
+
+- alert: "[Karura] Offline collators"
+  expr: |
+    rate(acala_session_active_validators{chain="karura", account=~"[[accounts]]"}[30m]) > 0
+  for: "[[interval]]"
+  labels:
+    uniqueid: 17
     chat_id: "[[chat_id]]"
     labels_source: acala_session_active_validators
   annotations:
@@ -143,10 +256,10 @@ rules:
 
 - alert: "[Moonbeam] Blocks authored by end of round"
   expr: |
-    moonbeam_blockAuthorship{chain=~"[[chain]]", account=~"[[accounts]]"} < [[threshold]] and on(account) moonbeam_activeCollators == 1 and on (chain) moonbeam_roundProgress >= 90
+    moonbeam_blockAuthorship{chain="moonbeam", account=~"[[accounts]]"} < [[threshold]] and on(account) moonbeam_activeCollators == 1 and on (chain) moonbeam_roundProgress >= 90
   for: "[[interval]]"
   labels:
-    uniqueid: 10
+    uniqueid: 18
     chat_id: "[[chat_id]]"
     labels_source: moonbeam_blockAuthorship
   annotations:
@@ -156,13 +269,27 @@ rules:
     account: "{{ $labels.account }}"
     bot_description: "Will shout if some of selected collators authored blocks less than threshold you selected by end of round.\nThreshold value - amount of blocks"
 
+- alert: "[Moonriver] Blocks authored by end of round"
+  expr: |
+    moonbeam_blockAuthorship{chain="moonriver", account=~"[[accounts]]"} < [[threshold]] and on(account) moonbeam_activeCollators == 1 and on (chain) moonbeam_roundProgress >= 90
+  for: "[[interval]]"
+  labels:
+    uniqueid: 19
+    chat_id: "[[chat_id]]"
+    labels_source: moonbeam_blockAuthorship
+  annotations:
+    summary: "{{ $labels.chain }}: Collator has authored blocks less than choosen."
+    description: "Collator {{ $labels.account }} authored {{ $value }} blocks by end of round."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected collators authored blocks less than threshold you selected by end of round.\nThreshold value - amount of blocks"      
 
 - alert: "[Moonbeam] Offline collators"
   expr: |
-    rate(moonbeam_activeCollators{chain=~"[[chain]]", account=~"[[accounts]]"}[30m]) > 0
+    rate(moonbeam_activeCollators{chain="moonbeam", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
-    uniqueid: 11
+    uniqueid: 20
     chat_id: "[[chat_id]]"
     labels_source: moonbeam_activeCollators
   annotations:
@@ -172,12 +299,26 @@ rules:
     account: "{{ $labels.account }}"
     bot_description: "Will shout if some of selected collators been an active and become to inactive."
 
+- alert: "[Moonriver] Offline collators"
+  expr: |
+    rate(moonbeam_activeCollators{chain="moonriver", account=~"[[accounts]]"}[30m]) > 0
+  for: "[[interval]]"
+  labels:
+    uniqueid: 21
+    chat_id: "[[chat_id]]"
+    labels_source: moonbeam_activeCollators
+  annotations:
+    summary: "{{ $labels.chain }}: Collator become to inactive state!"
+    description: "Collator {{ $labels.account }} is inactive now!"
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected collators been an active and become to inactive."      
 
 - alert: "Test alert - FIRE NOW."
   expr: vector(1)
   for: "[[interval]]"
   labels:
-    uniqueid: 12
+    uniqueid: 22
     chat_id: "[[chat_id]]"
   annotations:
     summary: "This is a summary of test alert."
