@@ -24,7 +24,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 7,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -465,7 +464,7 @@
           "refId": "A"
         }
       ],
-      "title": "Moonbeam collators points",
+      "title": "Collator points",
       "transformations": [
         {
           "id": "seriesToColumns",
@@ -521,7 +520,7 @@
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "acala",
           "value": "acala"
         },
@@ -636,6 +635,6 @@
   "timezone": "",
   "title": "Acala/Karura",
   "uid": "db101c88-3457-4ded-9882-63b0873b5ae8",
-  "version": 4,
+  "version": 5,
   "weekStart": ""
 }
