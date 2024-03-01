@@ -12,7 +12,7 @@ async def support_menu(query: CallbackQuery):
     chat_id = query.message.chat.id
     message_id = query.message.message_id
     
-    text = "🚧 This section is under construction 🚧\n\nAt this moment you can send message to our team only."
+    text = "Here you can send some message to our team like bug report, questions, proposals etc."
     menu = MenuBuilder()
 
     menu.button(text='📨 Write us', callback_data=CbData(dst="support_send_message", data="", id=0).pack()) + "size=1"
