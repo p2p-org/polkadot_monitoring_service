@@ -21,9 +21,9 @@ async def check_if_blocked(handler: Callable[[Update, Dict[str, Any]], Awaitable
 
     account_status = db.get_records('account_status','id',chat_id)
    
-    if isinstance(account_status, list):
-        await bot.delete_message(chat_id, message_id)
-        CancelHandler()
+    #if isinstance(account_status, list):
+    #    await bot.delete_message(chat_id, message_id)
+    #    CancelHandler()
 
     if account_status == 'off':
         if event.event_type == 'message':
