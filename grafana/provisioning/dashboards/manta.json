@@ -24,6 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 8,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -165,7 +166,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "acala_session_active_validators{chain=\"$chain\",account=~\"$account\"}",
+          "expr": "manta_activeCollators{chain=\"$chain\", account=~\"$account\"}",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -227,12 +228,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 18,
         "y": 0
       },
-      "id": 16,
+      "id": 9,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -257,13 +258,13 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "acala_session_common{chain=\"$chain\", account=~\"$account\", name=\"current_session\"}",
-          "legendFormat": "{{ account }}",
+          "expr": "manta_currentRound{chain=\"$chain\"}",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Current Session",
+      "title": "Current round",
       "type": "stat"
     },
     {
@@ -283,6 +284,10 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           },
@@ -291,12 +296,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 2,
         "w": 6,
         "x": 18,
-        "y": 5
+        "y": 4
       },
-      "id": 17,
+      "id": 12,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -321,13 +326,149 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "acala_session_common{chain=\"$chain\",name=\"active_validators_count\"}",
+          "expr": "max_over_time(manta_blocksMedian{chain=\"$chain\"}[1m])",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Active set collators count",
+      "title": "Median blocks",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 6,
+        "x": 18,
+        "y": 6
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max_over_time(manta_blocksP95{chain=\"$chain\"}[1m])",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "P95 blocks",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 6,
+        "x": 18,
+        "y": 8
+      },
+      "id": 13,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max_over_time(manta_blocksAvg{chain=\"$chain\"}[1m])",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "AVG blocks",
       "type": "stat"
     },
     {
@@ -387,42 +528,6 @@
                 "value": 273
               }
             ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "chain"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 173
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "account"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 836
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 141
-              }
-            ]
           }
         ]
       },
@@ -445,7 +550,12 @@
         },
         "frameIndex": 1,
         "showHeader": true,
-        "sortBy": []
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "node"
+          }
+        ]
       },
       "pluginVersion": "10.3.3",
       "targets": [
@@ -456,7 +566,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "acala_rewards_validator{chain=\"$chain\", account=~\"$account\"}",
+          "expr": "manta_blockAuthorship{chain=\"$chain\", account=~\"$account\"}",
           "format": "table",
           "instant": true,
           "legendFormat": "{{ account }}",
@@ -464,7 +574,7 @@
           "refId": "A"
         }
       ],
-      "title": "Collator points",
+      "title": "Manta collators points",
       "transformations": [
         {
           "id": "seriesToColumns",
@@ -511,6 +621,200 @@
         }
       ],
       "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "manta_blockAuthorship{chain=\"$chain\"}\n",
+          "interval": "",
+          "legendFormat": "{{ account }}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Manta block authorship",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "manta_roundBlocks{chain=\"$chain\"}",
+          "interval": "",
+          "legendFormat": "{{ account }}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Round blocks",
+      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -521,8 +825,8 @@
       {
         "current": {
           "selected": false,
-          "text": "acala",
-          "value": "acala"
+          "text": "manta",
+          "value": "manta"
         },
         "hide": 0,
         "includeAll": false,
@@ -531,16 +835,16 @@
         "options": [
           {
             "selected": true,
-            "text": "acala",
-            "value": "acala"
+            "text": "manta",
+            "value": "manta"
           },
           {
             "selected": false,
-            "text": "karura",
-            "value": "karura"
+            "text": "calamari",
+            "value": "calamari"
           }
         ],
-        "query": "acala,karura",
+        "query": "manta,calamari",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -633,8 +937,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Acala/Karura",
-  "uid": "db101c88-3457-4ded-9882-63b0873b5ae8",
-  "version": 5,
+  "title": "Manta/Calamari",
+  "uid": "a3546873-0ef7-4ff6-97a8-c2875878762e",
+  "version": 2,
   "weekStart": ""
 }
