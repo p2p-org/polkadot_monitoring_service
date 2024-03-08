@@ -225,7 +225,7 @@ rules:
 
 - alert: "[Acala] Offline collators"
   expr: |
-    rate(acala_session_active_validators{chain="acala", account=~"[[accounts]]"}[30m]) > 0
+    rate(acala_activeCollators{chain="acala", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
     uniqueid: 16
@@ -240,7 +240,7 @@ rules:
 
 - alert: "[Karura] Offline collators"
   expr: |
-    rate(acala_session_active_validators{chain="karura", account=~"[[accounts]]"}[30m]) > 0
+    rate(acala_activeCollators{chain="karura", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
     uniqueid: 17
@@ -312,13 +312,43 @@ rules:
     description: "Collator {{ $labels.account }} is inactive now!"
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected collators been an active and become to inactive."      
+    bot_description: "Will shout if some of selected collators been an active and become to inactive."
+
+- alert: "[Astar] Offline collators"
+  expr: |
+    rate(astar_activeCollators{chain="astar", account=~"[[accounts]]"}[30m]) > 0
+  for: "[[interval]]"
+  labels:
+    uniqueid: 22
+    chat_id: "[[chat_id]]"
+    labels_source: astar_activeCollators
+  annotations:
+    summary: "{{ $labels.chain }}: Collator become to inactive state!"
+    description: "Collator {{ $labels.account }} is inactive now!"
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected collators been an active and become to inactive."
+ 
+- alert: "[Shiden] Offline collators"
+  expr: |
+    rate(astar_activeCollators{chain="shiden", account=~"[[accounts]]"}[30m]) > 0
+  for: "[[interval]]"
+  labels:
+    uniqueid: 23
+    chat_id: "[[chat_id]]"
+    labels_source: astar_activeCollators
+  annotations:
+    summary: "{{ $labels.chain }}: Collator become to inactive state!"
+    description: "Collator {{ $labels.account }} is inactive now!"
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected collators been an active and become to inactive."
 
 - alert: "Test alert - FIRE NOW."
   expr: vector(1)
   for: "[[interval]]"
   labels:
-    uniqueid: 22
+    uniqueid: 24
     chat_id: "[[chat_id]]"
   annotations:
     summary: "This is a summary of test alert."

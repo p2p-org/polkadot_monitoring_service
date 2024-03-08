@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  astar_exporter:
+    build:
+      context: ./exporters/astar
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150" 
+    - "CHAIN=astar"
+    env_file:
+    - ./astar.env
+    networks:
+    - exporters
+

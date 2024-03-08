@@ -72,6 +72,18 @@ scrape_configs:
   - targets:
     - 'karura_exporter:9150'
 
+- job_name: astar_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'astar_exporter:9150'
+
+- job_name: shiden_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'shiden_exporter:9150'
+
 alerting:
   alertmanagers:
     - scheme: http
