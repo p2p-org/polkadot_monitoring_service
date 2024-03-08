@@ -7,9 +7,8 @@ services:
     environment:
     - "LISTEN=0.0.0.0"
     - "PORT=9150" 
-    - "CHAIN=karura"
+    - "CHAIN=shiden"
     env_file:
     - ./shiden.env
     networks:
     - exporters
-
