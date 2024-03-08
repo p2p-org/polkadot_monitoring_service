@@ -28,29 +28,28 @@ def metrics():
     out = ""
 
     try:
-        out += '# HELP acala_session_common Common metrics\n'
-        out += '# TYPE acala_session_common counter\n'
+        out += '# HELP acala_currentSession Current session\n'
+        out += '# TYPE acala_currentSession counter\n'
 
-        for k, v in metrics['common'].items():
-            out += 'acala_session_common{name="%s", chain="%s"} %s\n' % (k, chain, v)
+        out += 'acala_currentSession{chain="%s"} %s\n' % (chain, metrics['common']['current_session'])
     except KeyError:
         pass
 
     try:
-        out += '# HELP acala_session_active_validators Active validators\n'
-        out += '# TYPE acala_session_active_validators counter\n'
+        out += '# HELP acala_activeCollators Active collators\n'
+        out += '# TYPE acala_activeCollators counter\n'
 
-        for k, v in metrics['validators'].items():
-            out += 'acala_session_active_validators{chain="%s", account="%s"} %s\n' % (chain, k, v)
+        for i in metrics['collators'].keys():
+            out += 'acala_activeCollators{chain="%s", account="%s"} 1\n' % (chain, i)
     except KeyError:
         pass
 
     try:
-        out += '# HELP acala_rewards_validator Points earned\n'
-        out += '# TYPE acala_rewards_validator counter\n'
+        out += '# HELP acala_sessionPoints Points earned\n'
+        out += '# TYPE acala_sessionPoints counter\n'
 
-        for k, v in metrics['validators'].items():
-            out += 'acala_rewards_validator{chain="%s", account="%s"} %s\n' % (chain, k, v)
+        for k, v in metrics['collators'].items():
+            out += 'acala_sessionPoints{chain="%s", account="%s"} %s\n' % (chain, k, v)
     except KeyError:
         pass
 
@@ -61,34 +60,32 @@ def metrics():
 
 
 def main():
-    block = 0
+    session = 0
 
     while True:
         try:
-            last_block = substrate_interface.request('System', 'Number').value
-            if last_block != block:
-                validators = substrate_interface.request('Session', 'Validators').value
-                current_session = substrate_interface.request('Session', 'CurrentIndex').value
+            current_session = substrate_interface.request('Session', 'CurrentIndex').value
 
-                result = {'validators': {}, 'common': {}}
+            if session != current_session:
+                active_collators = substrate_interface.request('Session', 'Validators').value
+                result = {'collators': {}, 'common': {}}
 
                 result['common'] = {}
-                result['common']['active_validators_count'] = len(validators)
                 result['common']['current_session'] = current_session
 
-                for addr in validators:
-                    points = substrate_interface.request('CollatorSelection', 'SessionPoints', [addr]).value
-                    validator_points = {k: points for k in validators if k == addr}
-                    result['validators'].update(validator_points)
+                logging.info('New session ' + str(current_session) + ' has just begun')
 
-                q_metrics.clear()
-                q_metrics.append(result)
+            for addr in active_collators:
+                result['collators'][addr] = substrate_interface.request('CollatorSelection', 'SessionPoints', [addr]).value
 
-            block = last_block
+            q_metrics.clear()
+            q_metrics.append(result)
+
+            session = current_session
 
         except Exception as e:
-            logging.critical(e)
-            time.sleep(3)
+            logging.critical('The main thread been stucked with error "' + str(e) + '"')
+            time.sleep(10)
 
             continue
 

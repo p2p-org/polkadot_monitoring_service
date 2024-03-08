@@ -91,7 +91,7 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
 2. Run the exporters, grafana and tg bot:
     - directly via docker-compose:
         - `docker-compose -f docker-compose.yml -f polkadot.yml -f kusama.yml up` - will start exporters for polkadot and kusama
-        - `docker-compose -f docker-compose.yml -f polkadot.yml -f kusama.yml -f acala.yml -f karura.yml -f moonbeam.yml -f moonriver.yml up` - will start exporters only for polkadot/kusama and parachains Acala/Karura, Moonbeam/Moonriver.
+        - `docker-compose -f docker-compose.yml -f polkadot.yml -f kusama.yml -f acala.yml -f karura.yml -f moonbeam.yml -f moonriver.yml -f astar.yml -f shiden.yml up` - will start exporters only for polkadot/kusama and parachains Acala/Karura, Moonbeam/Moonrive, Astar/Shiden.
 3. Inspect the [dashboard](http://127.0.0.1:3000/d/fDrj0_EGz/p2p-org-polkadot-kusama-dashboard?orgId=1) (default username and password `admin`, `admin`)
 4. Inspect the tg bot:
     1. Contact with your bot. Command `/start` will be good:)

@@ -21,7 +21,7 @@ async def main_menu(message: Message):
     if not account_status:
         db.add_account(chat_id,username)
         
-        await bot.send_message(admin_chat, text="Username: @" + username + " ID:" + chat_id + "\n\nHas just registered.")
+        await bot.send_message(admin_chat, text="Username: @" + str(username) + " ID:" + str(chat_id) + "\n\nHas just registered.")
         
     try:
         await message.edit_text("✋✋✋ Welcome to a validator monitoring bot by P2P.org\n\nWe tried to collect lots of metrics related to validators behavior in substrate based networks and expose it through Telegram bot.\n\nNote: We collect metrics for one month, you can get historical data through Grafana.",reply_markup=menu.as_markup())

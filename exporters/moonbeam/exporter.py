@@ -159,6 +159,7 @@ def main():
         except Exception as e:
             logging.critical('The main thread been stucked with error "' + str(e) + '"')
             time.sleep(5)
+
             continue
 
         time.sleep(3)

@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  shiden_exporter:
+    build:
+      context: ./exporters/astar
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150" 
+    - "CHAIN=shiden"
+    env_file:
+    - ./shiden.env
+    networks:
+    - exporters
