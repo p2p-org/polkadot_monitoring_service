@@ -24,11 +24,10 @@ from websocket._exceptions import WebSocketConnectionClosedException
 
 
 class SUBSTRATE_INTERFACE:
-    def __init__(self, ws_endpoint, chain):
+    def __init__(self, ws_endpoint):
         self.substrate = SubstrateInterface(
             url=ws_endpoint,
-            ss58_format=42,
-            type_registry_preset=chain)
+            ss58_format=42)
 
     def request(self, module: str, function: str, params: str = None):
         try:
