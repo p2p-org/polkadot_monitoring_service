@@ -164,7 +164,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "acala_activeCollators{chain=\"$chain\",account=~\"$account\"}",
+          "expr": "astar_activeCollators{chain=\"$chain\", account=~\"$account\"}",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -230,7 +230,7 @@
         "x": 18,
         "y": 0
       },
-      "id": 16,
+      "id": 9,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -255,13 +255,13 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "acala_currentSession{chain=\"$chain\", account=~\"$account\"}",
-          "legendFormat": "{{ account }}",
+          "expr": "astar_currentSession{chain=\"$chain\"}",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Current Session",
+      "title": "Current session",
       "type": "stat"
     },
     {
@@ -320,42 +320,6 @@
                 "value": 273
               }
             ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "chain"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 173
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "account"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 836
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 141
-              }
-            ]
           }
         ]
       },
@@ -378,7 +342,12 @@
         },
         "frameIndex": 1,
         "showHeader": true,
-        "sortBy": []
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "node"
+          }
+        ]
       },
       "pluginVersion": "10.4.0",
       "targets": [
@@ -389,7 +358,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "acala_sessionPoints{chain=\"$chain\", account=~\"$account\"}",
+          "expr": "astar_blockAuthorship{chain=\"$chain\", account=~\"$account\"}",
           "format": "table",
           "instant": true,
           "legendFormat": "{{ account }}",
@@ -397,7 +366,7 @@
           "refId": "A"
         }
       ],
-      "title": "Collator points",
+      "title": "Collators points",
       "transformations": [
         {
           "id": "seriesToColumns",
@@ -444,6 +413,198 @@
         }
       ],
       "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "astar_blockAuthorship{chain=\"$chain\"}\n",
+          "interval": "",
+          "legendFormat": "{{ account }}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Manta block authorship",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "astar_sessionBlocks{chain=\"$chain\"}",
+          "interval": "",
+          "legendFormat": "{{ account }}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Session blocks",
+      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -454,8 +615,8 @@
       {
         "current": {
           "selected": true,
-          "text": "acala",
-          "value": "acala"
+          "text": "astar",
+          "value": "astar"
         },
         "hide": 0,
         "includeAll": false,
@@ -464,16 +625,16 @@
         "options": [
           {
             "selected": true,
-            "text": "acala",
-            "value": "acala"
+            "text": "astar",
+            "value": "astar"
           },
           {
             "selected": false,
-            "text": "karura",
-            "value": "karura"
+            "text": "shiden",
+            "value": "shiden"
           }
         ],
-        "query": "acala,karura",
+        "query": "astar,shiden",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -566,8 +727,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Acala/Karura",
-  "uid": "db101c88-3457-4ded-9882-63b0873b5ae8",
-  "version": 6,
+  "title": "Astar/Shiden",
+  "uid": "a3546873-0ef7-4ff6-97a8-c2875878762e",
+  "version": 3,
   "weekStart": ""
 }
