@@ -11,8 +11,11 @@ async def handler(request: Request):
     a = await request.json()
     print(yaml.dump(a))
 
-    if isinstance(a, dict) and 'alerts' in a.keys(): 
-        chat_id = int(a['commonLabels']['chat_id'])
+    if isinstance(a, dict) and 'alerts' in a.keys():
+        try:
+            chat_id = int(a['commonLabels']['chat_id'])
+        except KeyError:
+            return web.Response(status=401)
         promalert_status = db.get_records('promalert_status', 'id', chat_id)
 
         if promalert_status == 'on':

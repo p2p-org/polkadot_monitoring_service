@@ -7,7 +7,7 @@ from aiogram import F
 from callback_data.main import CbData
 from utils.menu_builder import MenuBuilder
 from utils.alerts import Alerts
-from forms.subscribtions import Form
+from forms.subscriptions import Form
 import re
 
 @router.callback_query(CbData.filter(F.dst == 'sub_menu'))
@@ -20,7 +20,7 @@ async def sub_menu(query: CallbackQuery):
     
     menu = MenuBuilder()
       
-    menu.button(text='📨 My Subscribtions', callback_data=CbData(dst="sub_manage", data="", id=0).pack()) + "size=1"
+    menu.button(text='📨 My Subscriptions', callback_data=CbData(dst="sub_manage", data="", id=0).pack()) + "size=1"
     menu.button(text="⚙️  My accounts", callback_data=CbData(dst="acc_menu", data="", id=0).pack()) + "size=1"
     menu.button(text="⬅️  Back", callback_data=CbData(dst="main_menu", data="", id=0).pack()) + "size=2"
 
@@ -155,7 +155,7 @@ async def sub_edit(query: CallbackQuery, state: FSMContext):
     mandatory_filters = alerts.get_variables(template=template)
    
     if isinstance(d, dict) and len(d.keys()) == 0:
-        await state.set_state(Form.subscribtions)
+        await state.set_state(Form.subscriptions)
 
         check_list = {'id': uniqueid, 'check_list':{i:{'data': 'undefined', 'emoji': '❌ '} for i in mandatory_filters if i != 'chat_id'}}
 
@@ -388,7 +388,7 @@ async def sub_save(query: CallbackQuery, state: FSMContext):
 
     alerts.add_rule(uniqueid=uniqueid, check_list=check_list, template=template)
     
-    await query.answer('Subscribtion has been added')
+    await query.answer('Subscription has been added')
     await sub_manage(query,state)
 
 @router.callback_query(CbData.filter(F.dst == 'sub_delete'))
@@ -400,5 +400,5 @@ async def sub_delete(query: CallbackQuery, state: FSMContext):
 
     alerts.delete_rule(uniqueid=uniqueid)
     
-    await query.answer('Subscribtion has been deleted')
+    await query.answer('Subscription has been deleted')
     await sub_manage(query,state)
