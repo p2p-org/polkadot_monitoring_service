@@ -14,7 +14,7 @@ async def main_menu(message: Message):
     
     menu = MenuBuilder()
     menu.button(text="Open Grafana", url=grafana_url) + "size=1"
-    menu.button(text="Manage Subscribtions", callback_data=CbData(dst="sub_menu", data="", id=0).pack()) + "size=1"
+    menu.button(text="Manage Subscriptions", callback_data=CbData(dst="sub_menu", data="", id=0).pack()) + "size=1"
     menu.button(text="Help", callback_data=CbData(dst='support_menu', data="", id=0).pack()) + "size=1"
     menu.build()
 
