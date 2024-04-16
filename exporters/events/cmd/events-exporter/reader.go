@@ -18,13 +18,13 @@ import (
 )
 
 type Config struct {
-	WSUrl             string `json:"WS_ENDPOINT" envconfig:"WS_ENDPOINT" default:"wss://rpc.polkadot.io/"`
-	MetricsListen     string `json:"LISTEN" envconfig:"LISTEN" default:":9150"`
-	LabelChainValue   string `json:"LABEL_CHAIN" envconfig:"LABEL_CHAIN" default:""`
-	LogLevel          string `json:"LOG_LEVEL" envconfig:"LOG_LEVEL" default:"info"`
-	NewHeadBy         string `json:"NEW_HEAD_BY" envconfig:"NEW_HEAD_BY" default:"poll"`
-	ExposeIdentities  bool   `json:"EXPOSE_ID" envconfig:"EXPOSE_ID"`
-	KnownValidatorCfg string `json:"VALIDATORS_CFG" envconfig:"VALIDATORS_CFG" default:""`
+	WSUrl             string   `json:"WS_ENDPOINT" envconfig:"WS_ENDPOINT" default:"wss://rpc.polkadot.io/"`
+	MetricsListen     string   `json:"LISTEN" envconfig:"LISTEN" default:":9150"`
+	LabelChainValue   string   `json:"LABEL_CHAIN" envconfig:"LABEL_CHAIN" default:""`
+	LogLevel          string   `json:"LOG_LEVEL" envconfig:"LOG_LEVEL" default:"info"`
+	NewHeadBy         string   `json:"NEW_HEAD_BY" envconfig:"NEW_HEAD_BY" default:"poll"`
+	ExposeIdentities  bool     `json:"EXPOSE_ID" envconfig:"EXPOSE_ID"`
+	KnownValidatorCfg []string `json:"VALIDATORS_CFG" envconfig:"VALIDATORS_CFG" default:""`
 }
 
 /*
@@ -77,8 +77,9 @@ func NewHeadReader(l *logrus.Logger, cfg Config, ctx context.Context) (*HeadRead
 		log:                 l,
 		cfg:                 cfg,
 	}
-	if cfg.KnownValidatorCfg != "" {
-		r.ReadKnownValidatorsFile(cfg.KnownValidatorCfg)
+	for _, path := range cfg.KnownValidatorCfg {
+		l.Infof("loading config from %s", path)
+		r.ReadKnownValidatorsFile(path)
 	}
 
 	return &r, nil
@@ -266,7 +267,8 @@ func (reader *HeadReader) Read(ctx context.Context) error {
 					return fmt.Errorf("no new events during tick interval")
 				}
 			case <-ctx.Done():
-				return nil
+				reader.EventsRate = 0
+				return ctx.Err()
 			}
 
 		}
@@ -274,38 +276,30 @@ func (reader *HeadReader) Read(ctx context.Context) error {
 	// follow head goroutine
 	g.Go(func() error {
 		if reader.cfg.NewHeadBy == "subscription" {
-			if err := reader.subscribeHeadHashes(ctx, headHashes); err != nil {
-				return err
-			} else {
-				return nil
-			}
+			return reader.subscribeHeadHashes(ctx, headHashes)
 		} else {
-			if err := reader.pollHeadHashes(ctx, headHashes); err != nil {
-				return err
-			} else {
-				return nil
-			}
+			return reader.pollHeadHashes(ctx, headHashes)
 		}
 	})
 	// handle input hashes
 	g.Go(func() error {
 		for {
+			callCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
+			defer cancel()
 			select {
 			case h := <-headHashes:
-				g.Go(func() error {
-					ctx, cancel := context.WithTimeout(ctx, 120*time.Second)
-					defer cancel()
-					if err := reader.ProcessBlockEvents(ctx, h); err != nil {
-						return err
-					}
-					if err := reader.ProcessBlockParaVotes(ctx, h); err != nil {
-						return err
-					}
-					return nil
-				})
+				if err := reader.ProcessBlockEvents(callCtx, h); err != nil {
+					return err
+				}
+				if err := reader.ProcessBlockParaVotes(callCtx, h); err != nil {
+					return err
+				}
 			case <-ctx.Done():
-				return nil
+				return ctx.Err()
+			case <-callCtx.Done():
+				return callCtx.Err()
 			}
+			cancel()
 		}
 	})
 	if err := g.Wait(); err != nil {
