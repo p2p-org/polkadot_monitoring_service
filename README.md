@@ -97,6 +97,13 @@ WS_ENDPOINTS="http://your-node1:9944,http://your-node2:9944,http://your-node3:99
     1. Contact with your bot. Command `/start` will be good:)
     2. Try to build or destroy grafana instance(local version generates only `values.yml` which needed to provide to Grafana)
     3. Subscribe/Unsubscribe on alerts from bot.
+  
+## Project links 
+1. Project web [page](maas.p2p.org)
+2. Official user [guide] (https://p2p.org/economy/validator-monitoring-service-user-guide/)
+3. Launching [announcement] (https://p2p.org/economy/validator-announces-new-validator-monitoring-service-updated/ )
+
+
 
 ## References
 
