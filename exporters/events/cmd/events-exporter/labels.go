@@ -152,35 +152,41 @@ func (reader *HeadReader) GetValidatorsIdentity(ctx context.Context, accU32 stri
 
 func (reader *HeadReader) ReadKnownValidatorsFile(filename string) {
 	if filename != "" {
+
 		fi, err := os.Lstat(filename)
 		if err != nil {
 			reader.log.WithError(err).Errorf("loading known validators skipped %s", filename)
 			return
 		}
 		if fi.Mode()&os.ModeSymlink != 0 {
+			dir := filepath.Dir(filename)
 			filename, _ = os.Readlink(filename)
-		}
-		pth, err := filepath.Abs(filename)
-		if err != nil {
-			reader.log.WithError(err).Errorf("loading known validators skipped %s", pth)
-			return
+			filename = filepath.Join(dir, filename)
 		}
 
-		if r, err := os.Open(pth); err != nil {
-			reader.log.WithError(err).Errorf("loading known validators skipped %s", pth)
+		if r, err := os.Open(filename); err != nil {
+			reader.log.WithError(err).Errorf("loading known validators skipped %s", filename)
 			return
 		} else {
 			payload, err := io.ReadAll(r)
 			if err != nil {
-				reader.log.WithError(err).Errorf("loading known validators skipped %s", pth)
+				reader.log.WithError(err).Errorf("loading known validators skipped %s", filename)
 				return
 			}
-			registry := ValidatorsRegistry{}
+			var registry ValidatorsRegistry
 			if err := yaml.Unmarshal(payload, &registry); err != nil {
-				reader.log.WithError(err).Errorf("loading known validators skipped %s", pth)
+				reader.log.WithError(err).Errorf("loading known validators skipped %s", filename)
 				return
 			}
-			reader.registry = &registry
+			if reader.registry == nil {
+				reader.registry = &ValidatorsRegistry{
+					Validators: map[string]ValidatorRecord{},
+				}
+			}
+
+			for k, v := range registry.Validators {
+				reader.registry.Validators[k] = v
+			}
 		}
 	}
 }
