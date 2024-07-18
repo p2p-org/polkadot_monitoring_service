@@ -1,0 +1,32 @@
+version: '3.4'
+
+services:
+  turing_common_exporter:
+    build:
+      context: ./exporters/avail
+      args:
+        exporter: "common_exporter"
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150" 
+    - "CHAIN=turing"
+    env_file:
+    - ./turing.env
+    networks:
+    - exporters
+    restart: on-failure
+
+  turing_finality_exporter:
+    build:
+      context: ./exporters/avail
+      args:
+        exporter: "finality_exporter"
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150"
+    - "CHAIN=turing"
+    env_file:
+    - ./turing.env
+    networks:
+    - exporters
+    restart: on-failure
