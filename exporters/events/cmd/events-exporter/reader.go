@@ -25,6 +25,7 @@ type Config struct {
 	NewHeadBy         string   `json:"NEW_HEAD_BY" envconfig:"NEW_HEAD_BY" default:"poll"`
 	ExposeIdentities  bool     `json:"EXPOSE_ID" envconfig:"EXPOSE_ID"`
 	KnownValidatorCfg []string `json:"VALIDATORS_CFG" envconfig:"VALIDATORS_CFG" default:""`
+	ExposeParaVotes   bool     `json:"EXPOSE_PARAVOTES" envconfig:"EXPOSE_PARAVOTES" default:"true"`
 }
 
 /*
@@ -291,8 +292,10 @@ func (reader *HeadReader) Read(ctx context.Context) error {
 				if err := reader.ProcessBlockEvents(callCtx, h); err != nil {
 					return err
 				}
-				if err := reader.ProcessBlockParaVotes(callCtx, h); err != nil {
-					return err
+				if reader.cfg.ExposeParaVotes {
+					if err := reader.ProcessBlockParaVotes(callCtx, h); err != nil {
+						return err
+					}
 				}
 			case <-ctx.Done():
 				return ctx.Err()
