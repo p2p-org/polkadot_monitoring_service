@@ -105,7 +105,7 @@ def get_votes(url, substrate_interface):
                 q_outaged.append(url)
             time.sleep(1)
             substrate_interface.connect_websocket()
-
+            pass
 
 def construct_metrics(active_validators, grandpa_keys, votes_threshold, current_session):
     data = q_votes_raw.copy()

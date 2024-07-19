@@ -43,7 +43,11 @@ class SUBSTRATE_INTERFACE:
             r = None
 
     def rpc_request(self, method: str, params: str = None):
-        return self.substrate.rpc_request(method=method, params=params)
+        try:
+            return self.substrate.rpc_request(method=method, params=params)
+        except Exception as e:
+            self.substrate.connect_websocket()
+            logging.critical('The substrate api request failed with error ' + str(e))
 
 
 def get_era_points(data):

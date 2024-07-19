@@ -22,6 +22,7 @@ import time
 import threading
 import logging
 import traceback
+import random
 from functions import SUBSTRATE_INTERFACE, get_chain_info, get_keys, ss58_convert
 from _thread import interrupt_main
 from collections import deque
@@ -87,6 +88,8 @@ def get_votes(url, substrate_interface):
     while True:
         try:
             d = substrate_interface.rpc_request(method='grandpa_roundState')
+            if url in q_outaged:
+                q_outaged.remove(url)
             d = d['result']['best']
             if d['round'] != rd and len(r) != 0:
                 q_votes_raw.append(r)
@@ -97,8 +100,6 @@ def get_votes(url, substrate_interface):
             r[rd]['prevotes'] = d['prevotes']['missing']
             r[rd]['precommits'] = d['precommits']['missing']
 
-            if url in q_outaged:
-                q_outaged.remove(url)
         except Exception:
             if url not in q_outaged:
                 q_outaged.append(url)
@@ -176,6 +177,7 @@ def construct_metrics(active_validators, grandpa_keys, votes_threshold, current_
 
 
 def main():
+    substrate_interface = SUBSTRATE_INTERFACE(random.choice(rpc_endpoints), chain)
     while True:
         try:
             for i in q_outaged:
@@ -212,8 +214,6 @@ if __name__ == '__main__':
     rpc_count = len(rpc_endpoints)
     thread_count = 3
 
-    substrate_interface = SUBSTRATE_INTERFACE(rpc_endpoints[0])
-
     q_metrics = deque([])
     q_votes_raw = deque([], maxlen=rpc_count * thread_count * 15)
     q_rounds_processed = deque([], maxlen=100)
@@ -221,10 +221,7 @@ if __name__ == '__main__':
 
     for url in rpc_endpoints:
         for i in range(thread_count):
-            if url == rpc_endpoints[0]:
-                th = threading.Thread(target=get_votes, args=(url, substrate_interface))
-            else:
-                th = threading.Thread(target=get_votes, args=(url, SUBSTRATE_INTERFACE(url)))
+            th = threading.Thread(target=get_votes, args=(url, SUBSTRATE_INTERFACE(url)))
             th.daemon = True
             th.start()
             time.sleep(0.2)
