@@ -127,7 +127,7 @@ def metrics():
         out += '# HELP avail_session_sessionProgress Session progress\n'
         out += '# TYPE avail_session_sessionProgress counter\n'
 
-        out += 'polkadot_session_sessionProgress{chain="%s"} %s\n' % (chain, metrics['common']['sessionProgress'])
+        out += 'avail_session_sessionProgress{chain="%s"} %s\n' % (chain, metrics['common']['sessionProgress'])
 
     except KeyError:
         pass
