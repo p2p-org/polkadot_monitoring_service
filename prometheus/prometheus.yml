@@ -84,6 +84,30 @@ scrape_configs:
   - targets:
     - 'shiden_exporter:9150'
 
+- job_name: turing_common_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'turing_common_exporter:9150'
+
+- job_name: avail_common_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'avail_common_exporter:9150'
+
+- job_name: turing_finality_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'turing_finality_exporter:9150'
+
+- job_name: avail_finality_exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - 'avail_finality_exporter:9150'
+
 alerting:
   alertmanagers:
     - scheme: http

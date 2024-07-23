@@ -5,3 +5,4 @@ projects:
   Moonbeam: https://api.github.com/repos/PureStake/moonbeam/releases/latest
   Acala: https://api.github.com/repos/AcalaNetwork/Acala/releases/latest
   Astar: https://api.github.com/repos/PlasmNetwork/Astar/releases/latest
+  Avail: https://api.github.com/repos/availproject/avail/releases/latest

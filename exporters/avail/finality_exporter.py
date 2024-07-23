@@ -47,30 +47,30 @@ def metrics():
     out = ""
 
     try:
-        out += '# HELP polkadot_finality_roundsProcessed Blocks processed\n'
-        out += '# TYPE polkadot_finality_roundsProcessed counter\n'
+        out += '# HELP avail_finality_roundsProcessed Blocks processed\n'
+        out += '# TYPE avail_finality_roundsProcessed counter\n'
 
-        out += 'polkadot_finality_roundsProcessed{chain="%s"} %s\n' % (chain, metrics['roundsProcessed'])
-
-    except KeyError:
-        pass
-
-    try:
-        out += "# HELP polkadot_finality_prevotes Prevotes\n"
-        out += "# TYPE polkadot_finality_prevotes counter\n"
-
-        for k, v in metrics['validators'].items():
-            out += 'polkadot_finality_prevotes{chain="%s",account="%s"} %s\n' % (chain, k, v['prevotes'])
+        out += 'avail_finality_roundsProcessed{chain="%s"} %s\n' % (chain, metrics['roundsProcessed'])
 
     except KeyError:
         pass
 
     try:
-        out += "# HELP polkadot_finality_precommits Precommits\n"
-        out += "# TYPE polkadot_finality_precommits counter\n"
+        out += "# HELP avail_finality_prevotes Prevotes\n"
+        out += "# TYPE avail_finality_prevotes counter\n"
 
         for k, v in metrics['validators'].items():
-            out += 'polkadot_finality_precommits{chain="%s",account="%s"} %s\n' % (chain, k, v['precommits'])
+            out += 'avail_finality_prevotes{chain="%s",account="%s"} %s\n' % (chain, k, v['prevotes'])
+
+    except KeyError:
+        pass
+
+    try:
+        out += "# HELP avail_finality_precommits Precommits\n"
+        out += "# TYPE avail_finality_precommits counter\n"
+
+        for k, v in metrics['validators'].items():
+            out += 'avail_finality_precommits{chain="%s",account="%s"} %s\n' % (chain, k, v['precommits'])
 
     except KeyError:
         pass
@@ -106,6 +106,7 @@ def get_votes(url, substrate_interface):
             time.sleep(1)
             substrate_interface.connect_websocket()
             pass
+
 
 def construct_metrics(active_validators, grandpa_keys, votes_threshold, current_session):
     data = q_votes_raw.copy()
@@ -220,7 +221,7 @@ if __name__ == '__main__':
 
     for url in rpc_endpoints:
         for i in range(thread_count):
-            th = threading.Thread(target=get_votes, args=(url, SUBSTRATE_INTERFACE(url, chain)))
+            th = threading.Thread(target=get_votes, args=(url, SUBSTRATE_INTERFACE(url)))
             th.daemon = True
             th.start()
             time.sleep(0.2)
