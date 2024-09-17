@@ -1,0 +1,6 @@
+---
+ws_endpoint: ws://scaleway-moonbeam-node1:9934
+chain: moonbeam
+exporter:
+  listen: 0.0.0.0
+  port: 9618

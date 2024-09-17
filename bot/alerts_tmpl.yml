@@ -71,7 +71,7 @@ rules:
     description: "ParaValidator {{ $labels.account }} earned {{ $value }} points by end of epoch."
     chain: "{{ $labels.chain }}"
     account: "{{ $labels.account }}"
-    bot_description: "Will shout if some of selected validators been as a ParaValidator and earned epoch points less than threshold you selected by end of epoch.\nThreshold value - amount of reward points from 0 to 10000"      
+    bot_description: "Will shout if some of selected validators been as a ParaValidator and earned epoch points less than threshold you selected by end of epoch.\nThreshold value - amount of reward points from 0 to 10000"
 
 - alert: "[Polkadot] Offline validators"
   expr: |
@@ -223,12 +223,76 @@ rules:
     account: "{{ $labels.account }}"
     bot_description: "Will shout if amount of slashed validators in network will reach or more than threshold value.\nThreshold value - amount of validators."      
 
+- alert: "[Avail] Reward points by end of era"
+  expr: |
+    avail_staking_eraPoints{chain="[[chain]]", account=~"[[accounts]]"} < [[threshold]] and on(account) avail_session_validators == 1 and on (chain) avail_staking_eraProgress >= 95
+  for: "[[interval]]"
+  labels:
+    uniqueid: 16
+    chat_id: "[[chat_id]]"
+    chain: "[[chain]]"
+    labels_source: avail_staking_eraPoints
+  annotations:
+    summary: "{{ $labels.chain }}: Validator has earned points less than choosen."
+    description: "Validator {{ $labels.account }} earned {{ $value }} points by end of era."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators earned era points less than threshold you selected by end of era.\nThreshold value - amount of reward points from 0 to 20000"
+
+- alert: "[Avail] Finality GRANDPA precommits ratio"
+  expr: |
+    (avail_finality_precommits{chain="[[chain]]", account=~"[[accounts]]"} / on (chain) group_left() avail_finality_roundsProcessed * 100) < [[threshold]] and on(account) avail_session_validators == 1 and on (chain) avail_session_sessionProgress >= 3
+  for: "[[interval]]"
+  labels:
+    uniqueid: 17
+    chat_id: "[[chat_id]]"
+    chain: "[[chain]]"
+    labels_source: avail_finality_precommits
+  annotations:
+    summary: "{{ $labels.chain }}: Validator has problem with block finality participation!!!"
+    description: "Validator {{ $labels.account }} participate in finality for {{ $value }} percent."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators acts bellow threshold value as a consensus member(Precommits).\nThreshold value - percent of grandpa rounds when validator participated in consensus(0-100)"
+
+- alert: "[Avail] Unapplied slashes"
+  expr: |
+    avail_staking_slashedValidators{chain="[[chain]]", account=~"[[accounts]]"} == 1
+  for: "[[interval]]"
+  labels:
+    uniqueid: 18
+    chat_id: "[[chat_id]]"
+    chain: "[[chain]]"
+    labels_source: avail_staking_slashedValidators
+  annotations:
+    summary: "{{ $labels.chain }}: Validator has been slashed!!!"
+    description: "Validator {{ $labels.account }} has been slashed."
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if some of selected validators has been slashed.\nData from storage - possible also to catch it from events."
+
+- alert: "[Avail] Unapplied slashes in a whole network"
+  expr: |
+    avail_staking_slashedValidatorsCount{chain="[[chain]]"} > [[threshold]]
+  for: "[[interval]]"
+  labels:
+    uniqueid: 19
+    chat_id: "[[chat_id]]"
+    chain: "[[chain]]"
+    labels_source: avail_staking_slashedValidatorsCount
+  annotations:
+    summary: "{{ $labels.chain }}: Lots of slashed validators in the network!"
+    description: "Amount of slashed validators {{ $value }}"
+    chain: "{{ $labels.chain }}"
+    account: "{{ $labels.account }}"
+    bot_description: "Will shout if amount of slashed validators in network will reach or more than threshold value.\nThreshold value - amount of validators."
+
 - alert: "[Acala] Offline collators"
   expr: |
     rate(acala_activeCollators{chain="acala", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
-    uniqueid: 16
+    uniqueid: 20
     chat_id: "[[chat_id]]"
     labels_source: acala_session_active_validators
   annotations:
@@ -243,7 +307,7 @@ rules:
     rate(acala_activeCollators{chain="karura", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
-    uniqueid: 17
+    uniqueid: 21
     chat_id: "[[chat_id]]"
     labels_source: acala_session_active_validators
   annotations:
@@ -259,7 +323,7 @@ rules:
     moonbeam_blockAuthorship{chain="moonbeam", account=~"[[accounts]]"} < [[threshold]] and on(account) moonbeam_activeCollators == 1 and on (chain) moonbeam_roundProgress >= 90
   for: "[[interval]]"
   labels:
-    uniqueid: 18
+    uniqueid: 22
     chat_id: "[[chat_id]]"
     labels_source: moonbeam_blockAuthorship
   annotations:
@@ -274,7 +338,7 @@ rules:
     moonbeam_blockAuthorship{chain="moonriver", account=~"[[accounts]]"} < [[threshold]] and on(account) moonbeam_activeCollators == 1 and on (chain) moonbeam_roundProgress >= 90
   for: "[[interval]]"
   labels:
-    uniqueid: 19
+    uniqueid: 23
     chat_id: "[[chat_id]]"
     labels_source: moonbeam_blockAuthorship
   annotations:
@@ -289,7 +353,7 @@ rules:
     rate(moonbeam_activeCollators{chain="moonbeam", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
-    uniqueid: 20
+    uniqueid: 24
     chat_id: "[[chat_id]]"
     labels_source: moonbeam_activeCollators
   annotations:
@@ -304,7 +368,7 @@ rules:
     rate(moonbeam_activeCollators{chain="moonriver", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
-    uniqueid: 21
+    uniqueid: 25
     chat_id: "[[chat_id]]"
     labels_source: moonbeam_activeCollators
   annotations:
@@ -319,7 +383,7 @@ rules:
     rate(astar_activeCollators{chain="astar", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
-    uniqueid: 22
+    uniqueid: 26
     chat_id: "[[chat_id]]"
     labels_source: astar_activeCollators
   annotations:
@@ -334,7 +398,7 @@ rules:
     rate(astar_activeCollators{chain="shiden", account=~"[[accounts]]"}[30m]) > 0
   for: "[[interval]]"
   labels:
-    uniqueid: 23
+    uniqueid: 27
     chat_id: "[[chat_id]]"
     labels_source: astar_activeCollators
   annotations:
@@ -348,7 +412,7 @@ rules:
   expr: vector(1)
   for: "[[interval]]"
   labels:
-    uniqueid: 24
+    uniqueid: 28
     chat_id: "[[chat_id]]"
   annotations:
     summary: "This is a summary of test alert."

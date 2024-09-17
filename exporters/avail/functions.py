@@ -24,21 +24,23 @@ from websocket._exceptions import WebSocketConnectionClosedException
 
 
 class SUBSTRATE_INTERFACE:
-    def __init__(self, ws_endpoint, chain):
+    def __init__(self, ws_endpoint):
         self.substrate = SubstrateInterface(
             url=ws_endpoint,
-            ss58_format=42,
-            type_registry_preset=chain)
+            ss58_format=42)
 
     def request(self, module: str, function: str, params: str = None):
         try:
-            return self.substrate.query(
+            r = self.substrate.query(
                 module=module,
                 storage_function=function,
                 params=params)
+
+            return r
         except (WebSocketConnectionClosedException, ConnectionRefusedError, SubstrateRequestException) as e:
             self.substrate.connect_websocket()
             logging.critical('The substrate api call failed with error ' + str(e))
+            r = None
 
     def rpc_request(self, method: str, params: str = None):
         try:
@@ -58,13 +60,8 @@ def get_era_points(data):
 
 
 def get_chain_info(chain, substrate_interface):
-    constants = {
-        'polkadot': {'session_length': 2400, 'era_length': 14400},
-        'kusama': {'session_length': 600, 'era_length': 3600}
-    }
-
-    session_length = constants[chain]['session_length']
-    era_length = constants[chain]['era_length']
+    session_length = 720
+    era_length = 4320
 
     current_era = substrate_interface.request('Staking', 'ActiveEra').value['index']
     current_session = substrate_interface.request('Session', 'CurrentIndex').value

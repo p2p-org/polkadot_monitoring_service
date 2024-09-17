@@ -1,0 +1,32 @@
+version: '3.4'
+
+services:
+  avail_common_exporter:
+    build:
+      context: ./exporters/avail
+      args:
+        exporter: "common_exporter"
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150" 
+    - "CHAIN=avail"
+    env_file:
+    - ./avail.env
+    networks:
+    - exporters
+    restart: on-failure
+
+  avail_finality_exporter:
+    build:
+      context: ./exporters/avail
+      args:
+        exporter: "finality_exporter"
+    environment:
+    - "LISTEN=0.0.0.0"
+    - "PORT=9150"
+    - "CHAIN=avail"
+    env_file:
+    - ./avail.env
+    networks:
+    - exporters
+    restart: on-failure

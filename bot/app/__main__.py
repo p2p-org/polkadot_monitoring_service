@@ -4,6 +4,7 @@ import os
 import asyncio
 from aiohttp import web
 from aiogram import Bot, Dispatcher, Router
+from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
 from message_handlers.setup import setup_message_handler
 from web_apps.setup import setup_web_app
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     cache = CACHE(redis_host, redis_port, redis_password)
     web_app = web.Application()
     db = DB(db_name, db_user, db_pass,db_host,db_port)
-    bot = Bot(token=tg_token, parse_mode="HTML")
+    bot = Bot(token=tg_token, default=DefaultBotProperties(parse_mode='HTML'))
 
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)

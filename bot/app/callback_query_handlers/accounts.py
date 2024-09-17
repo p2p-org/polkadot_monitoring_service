@@ -18,7 +18,7 @@ async def acc_menu(query: CallbackQuery):
     
     menu = MenuBuilder()
     
-    text = "Here you can mange accounts you would like to track.\n\nFor now we are processing over " + str(cache.count()) + " uniq accounts of validators and collators.\n\nNetworks covered:\n🔸Polkadot/Kusama\n🔸Acala/Karura\n🔸Moonbeam/Moonriver\n🔸Astar/Shiden\n\n"  
+    text = "Here you can mange accounts you would like to track.\n\nFor now we are processing over " + str(cache.count()) + " uniq accounts of validators and collators.\n\nNetworks covered:\n🔸Polkadot/Kusama\n🔸Avail/Turing(testnet)\n🔸Acala/Karura\n🔸Moonbeam/Moonriver\n🔸Astar/Shiden\n\n"  
 
     if not validators:
         text += "☝️ No accounts in portfolio yet."
