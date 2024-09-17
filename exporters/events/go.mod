@@ -16,6 +16,7 @@ require (
 require github.com/kr/text v0.2.0 // indirect
 
 require (
+	github.com/avast/retry-go/v4 v4.6.0
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/decred/base58 v1.0.5 // indirect

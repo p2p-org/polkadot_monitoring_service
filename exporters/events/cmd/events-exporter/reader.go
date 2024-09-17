@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
@@ -48,6 +49,7 @@ type HeadReader struct {
 	wsclient              *client.RPCClient
 	decoder               *decoder.Decoder
 	log                   *logrus.Logger
+	rw                    *sync.Mutex
 	paraSessionValidators sync.Map //map[uint32][]string
 	sessionValidators     sync.Map //map[uint32][]string
 	cfg                   Config
@@ -77,6 +79,7 @@ func NewHeadReader(l *logrus.Logger, cfg Config, ctx context.Context) (*HeadRead
 		identities:          make(map[string]string),
 		log:                 l,
 		cfg:                 cfg,
+		rw:                  &sync.Mutex{},
 	}
 	for _, path := range cfg.KnownValidatorCfg {
 		l.Infof("loading config from %s", path)
@@ -150,12 +153,13 @@ func (reader *HeadReader) ProcessBlockParaVotes(ctx context.Context, hash string
 				votedValidators = append(votedValidators, groupVotes.MustInt("col1"))
 				// can go deeper and check backable (explicit)/seconded (implicit) statements if need be
 			}
-			missingVotes := getMissingValidatorsFrom(validatorGroups, votedValidators)
 			for _, vv := range votedValidators {
 				if reader.registry == nil || reader.GetValidatorsHostname(psValidators[vv]) != "" {
+					reader.mon.ProcessEvent(MetricBackingVotesMissedCount, 0, reader.LabelValues(psValidators[vv])...)
 					reader.mon.ProcessEvent(MetricBackingVotesExpectedCount, 1, reader.LabelValues(psValidators[vv])...)
 				}
 			}
+			missingVotes := getMissingValidatorsFrom(validatorGroups, votedValidators)
 			if len(missingVotes) > 0 {
 				for _, mv := range missingVotes {
 					if reader.registry == nil || reader.GetValidatorsHostname(psValidators[mv]) != "" {
@@ -285,24 +289,47 @@ func (reader *HeadReader) Read(ctx context.Context) error {
 	// handle input hashes
 	g.Go(func() error {
 		for {
-			callCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
-			defer cancel()
 			select {
 			case h := <-headHashes:
-				if err := reader.ProcessBlockEvents(callCtx, h); err != nil {
-					return err
-				}
+				blockctx, cancel := context.WithTimeout(ctx, 120*time.Second)
+				start := time.Now()
+				g, ctx := errgroup.WithContext(blockctx)
+				g.Go(func() error {
+					return retry.Do(
+						func() error {
+							ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+							defer cancel()
+							return reader.ProcessBlockEvents(ctx, h)
+						},
+						retry.Context(blockctx),
+						retry.Delay(time.Second),
+					)
+				})
 				if reader.cfg.ExposeParaVotes {
-					if err := reader.ProcessBlockParaVotes(callCtx, h); err != nil {
-						return err
-					}
+					g.Go(func() error {
+						return retry.Do(
+							func() error {
+								ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+								defer cancel()
+								return reader.ProcessBlockParaVotes(ctx, h)
+							},
+							retry.Context(blockctx),
+							retry.Delay(time.Second),
+						)
+					})
+				}
+				err := g.Wait()
+				cancel()
+				duration := time.Since(start).Seconds()
+				if duration > 5.0 {
+					reader.log.Infof("slow block %s processing took: %.2f sec", h, time.Since(start).Seconds())
+				}
+				if err != nil {
+					return err
 				}
 			case <-ctx.Done():
 				return ctx.Err()
-			case <-callCtx.Done():
-				return callCtx.Err()
 			}
-			cancel()
 		}
 	})
 	if err := g.Wait(); err != nil {
@@ -384,6 +411,8 @@ func (reader *HeadReader) HandleAllEvents(ctx context.Context, hash string, even
 
 // TODO: cleanup
 func (reader *HeadReader) GetParaSessionValidators(ctx context.Context, hash string, session uint32) []string {
+	reader.rw.Lock()
+	defer reader.rw.Unlock()
 	if _, ok := reader.paraSessionValidators.Load(session); !ok {
 		req, _ := reader.decoder.NewStorageRequest("paraSessionInfo", "accountKeys", session)
 		resp, err := reader.wsclient.StateGetStorage(ctx, req, hash)
@@ -416,6 +445,8 @@ func (reader *HeadReader) GetParaSessionValidatorBy(ctx context.Context, hash st
 
 // TODO: cleanup
 func (reader *HeadReader) GetSessionValidators(ctx context.Context, hash string, session uint32) []string {
+	reader.rw.Lock()
+	defer reader.rw.Unlock()
 	if session == 0 {
 		reader.sessionValidators.Range(func(key, value any) bool {
 			i := key.(uint32)
